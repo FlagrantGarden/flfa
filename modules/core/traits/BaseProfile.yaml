@@ -1,0 +1,21 @@
+traits:
+  - name: Defensive
+    effect: |
+      If this Group is not Shaken, in difficult terrain, or in cover,
+      they may Move into a defensive formation with all models in base contact.
+      They have +1 T until the start of their next activation.
+  - name: Defiant
+    effect: |
+      If this Group is not Shaken and not already in melee, when an enemy successfully activates to Attack them,
+      they may test at 7+ to meet the enemy halfway.
+      Count both Groups as attacking for to-hit rolls.
+  - name: Elusive
+    effect: |
+      If this Group is not Shaken and not already in melee, when an enemy successfully activates to Attack them,
+      they may immediately test at 7+ to move up to half their Move distance and Shoot at that enemy.
+  - name: Nimble
+    effect: This Group treats difficult terrain as normal terrain instead.
+  - name: Ponderous
+    effect: This Group treats difficult terrain as impassable terrain instead.
+  - name: Reckless
+    effect: If this Group is not Shaken, it must activate to Attack, if possible.
