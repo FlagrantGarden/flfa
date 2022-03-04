@@ -3,8 +3,10 @@ package play
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/FlagrantGarden/flfa/pkg/flfa"
+	"github.com/FlagrantGarden/flfa/pkg/terminal_documentation"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -55,6 +57,26 @@ func (p *PlayCommand) execute(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Your group is: %+v", group)
+
+	switch viper.GetString("format") {
+	case "json":
+		{
+			fmt.Print(group.JSON())
+		}
+	default:
+		{
+			groupOutput := strings.Builder{}
+			groupOutput.WriteString("| Name | Base Profile | Melee | Missile | Move | FS | R | T | Traits |\n")
+			groupOutput.WriteString("| ---- | ------------ | ----- | ------- | ---- | -- | - | - | ------ |\n")
+			groupOutput.WriteString(group.MarkdownTableEntry())
+			td := terminal_documentation.TerminalDocumentation{}
+			output, err := td.Render(groupOutput.String())
+			if err != nil {
+				return err
+			}
+			fmt.Print(output)
+		}
+	}
+
 	return nil
 }

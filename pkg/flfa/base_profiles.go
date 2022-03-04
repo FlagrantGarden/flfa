@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -132,4 +133,44 @@ func GetBaseProfileTraits(profile BaseProfile, traitList []Trait) []Trait {
 		}
 	}
 	return traits
+}
+
+func (m *Melee) String() string {
+	output := strings.Builder{}
+	if m.Activation == 0 {
+		output.WriteString("- / ")
+	} else {
+		output.WriteString(fmt.Sprintf("%d+ / ", m.Activation))
+	}
+	if m.ToHitAttacking == 0 {
+		output.WriteString("- / ")
+	} else if m.ToHitAttacking < 6 {
+		output.WriteString(fmt.Sprintf("%d+ / ", m.ToHitAttacking))
+	} else {
+		output.WriteString("6 / ")
+	}
+	if m.ToHitDefending < 6 {
+		output.WriteString(fmt.Sprintf("%d+", m.ToHitDefending))
+	} else {
+		output.WriteString("6")
+	}
+	return output.String()
+}
+
+func (m *Missile) String() string {
+	output := strings.Builder{}
+	if m.Activation == 0 {
+		output.WriteString("- / - / -")
+	} else {
+		output.WriteString(fmt.Sprintf("%d+ / %d+ / %d\"", m.Activation, m.ToHit, m.Range))
+	}
+	return output.String()
+}
+
+func (m *Move) String() string {
+	return fmt.Sprintf("%d+ / %d\"", m.Activation, m.Distance)
+}
+
+func (fs *FightingStrength) String() string {
+	return fmt.Sprintf("%d / %d", fs.Current, fs.Maximum)
 }
