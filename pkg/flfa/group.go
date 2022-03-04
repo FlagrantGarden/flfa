@@ -1,7 +1,9 @@
 package flfa
 
 import (
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/FlagrantGarden/flfa/pkg/prompt"
 	"github.com/justinian/dice"
@@ -63,6 +65,68 @@ func (g *Group) MakeCaptain(traitName string) error {
 		}
 	}
 	return fmt.Errorf("unable to make %s into a captain: could not assign trait '%s'", g.Name, traitName)
+}
+
+func (g *Group) MarkdownTableEntry() string {
+	output := strings.Builder{}
+	traits := g.Traits
+	if g.Captain.Name == "" {
+		output.WriteString(fmt.Sprintf("| %s |", g.Name))
+	} else {
+		output.WriteString(fmt.Sprintf("| **%s** |", g.Name))
+		traits = append([]string{fmt.Sprintf("**%s**", g.Captain.Name)}, traits...)
+	}
+	output.WriteString(fmt.Sprintf(" %s |", g.BaseProfileName))
+	output.WriteString(fmt.Sprintf(" %s |", g.Melee.String()))
+	output.WriteString(fmt.Sprintf(" %s |", g.Missile.String()))
+	output.WriteString(fmt.Sprintf(" %s |", g.Move.String()))
+	output.WriteString(fmt.Sprintf(" %s |", g.FightingStrength.String()))
+	output.WriteString(fmt.Sprintf(" %d+ |", g.Resolve))
+	output.WriteString(fmt.Sprintf(" %d |", g.Toughness))
+	output.WriteString(fmt.Sprintf(" %s |\n", strings.Join(traits, ", ")))
+	return output.String()
+}
+
+func (g *Group) JSON() string {
+	data := map[string]interface{}{
+		"name":            g.Name,
+		"id":              g.Id,
+		"baseProfileName": g.BaseProfileName,
+		"melee": map[string]interface{}{
+			"activation":     g.Melee.Activation,
+			"toHitAttacking": g.Melee.ToHitAttacking,
+			"toHitDefending": g.Melee.ToHitDefending,
+		},
+		"move": map[string]interface{}{
+			"activation": g.Move.Activation,
+			"distance":   g.Move.Distance,
+		},
+		"fightingStrength": map[string]interface{}{
+			"current": g.FightingStrength.Current,
+			"maximum": g.FightingStrength.Maximum,
+		},
+		"resolve":   g.Resolve,
+		"toughness": g.Toughness,
+		"traits":    g.Traits,
+	}
+	if g.Missile.Activation == 0 {
+		data["missile"] = map[string]interface{}{}
+	} else {
+		data["missile"] = map[string]interface{}{
+			"activation": g.Missile.Activation,
+			"toHit":      g.Missile.ToHit,
+			"range":      g.Missile.Range,
+		}
+	}
+	if g.Captain.Name == "" {
+		data["captain"] = map[string]interface{}{}
+	} else {
+		data["captain"] = map[string]interface{}{
+			"name": g.Captain.Name,
+		}
+	}
+	jsonString, _ := json.Marshal(data)
+	return string(jsonString)
 }
 
 func (ffapi *Api) NewGroup(name string, profileName string) (Group, error) {
