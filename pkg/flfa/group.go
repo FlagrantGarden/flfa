@@ -3,9 +3,10 @@ package flfa
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"strings"
+	"time"
 
-	"github.com/FlagrantGarden/flfa/pkg/prompt"
 	"github.com/justinian/dice"
 	"github.com/rs/zerolog/log"
 )
@@ -50,6 +51,7 @@ func (g *Group) InitializeToBaseProfile() error {
 }
 
 func (g *Group) MakeCaptain(traitName string) error {
+	rand.Seed(time.Now().UnixNano())
 	result, _, err := dice.Roll("3d6")
 	if err != nil {
 		return fmt.Errorf("unable to make %s into a captain: %s", g.Name, err)
@@ -139,49 +141,6 @@ func (ffapi *Api) NewGroup(name string, profileName string) (Group, error) {
 	err := group.InitializeToBaseProfile()
 	if err != nil {
 		return Group{}, err
-	}
-
-	return group, nil
-}
-
-func (ffapi *Api) NewGroupPrompt() (Group, error) {
-	var validProfiles []string
-	for _, profile := range ffapi.CachedProfiles {
-		validProfiles = append(validProfiles, profile.Name())
-	}
-	profilePrompt := prompt.PromptContent{
-		ErrorMessage: fmt.Sprintf("Please choose a valid profile from this list: %s", validProfiles),
-		Label:        "What base profile should this Group have?",
-	}
-	err := profilePrompt.GetSelection(validProfiles)
-	if err != nil {
-		return Group{}, err
-	}
-
-	namePrompt := prompt.PromptContent{
-		ErrorMessage: "Please provide a name.",
-		Label:        "What name should this Group be called?",
-	}
-	err = namePrompt.GetInput()
-	if err != nil {
-		return Group{}, err
-	}
-
-	group, err := ffapi.NewGroup(namePrompt.Result, profilePrompt.Result)
-	if err != nil {
-		return Group{}, err
-	}
-
-	captainPrompt := prompt.PromptContent{
-		Label: "Should this Group be a Captain?",
-	}
-	captainPrompt.GetConfirmation()
-
-	if captainPrompt.Result == "yes" {
-		err := group.MakeCaptain("")
-		if err != nil {
-			return Group{}, err
-		}
 	}
 
 	return group, nil
