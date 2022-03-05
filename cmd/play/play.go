@@ -60,23 +60,18 @@ func (p *PlayCommand) execute(cmd *cobra.Command, args []string) error {
 
 	switch viper.GetString("format") {
 	case "json":
-		{
-			fmt.Print(group.JSON())
-		}
+		fmt.Print(group.JSON())
 	default:
-		{
-			groupOutput := strings.Builder{}
-			groupOutput.WriteString("| Name | Base Profile | Melee | Missile | Move | FS | R | T | Traits |\n")
-			groupOutput.WriteString("| ---- | ------------ | ----- | ------- | ---- | -- | - | - | ------ |\n")
-			groupOutput.WriteString(group.MarkdownTableEntry())
-			td := terminal_documentation.TerminalDocumentation{}
-			output, err := td.Render(groupOutput.String())
-			if err != nil {
-				return err
-			}
-			fmt.Print(output)
+		groupOutput := strings.Builder{}
+		groupOutput.WriteString("| Name | Base Profile | Melee | Missile | Move | FS | R | T | Traits |\n")
+		groupOutput.WriteString("| ---- | ------------ | ----- | ------- | ---- | -- | - | - | ------ |\n")
+		groupOutput.WriteString(group.MarkdownTableEntry())
+		td := terminal_documentation.TerminalDocumentation{}
+		output, err := td.Render(groupOutput.String())
+		if err != nil {
+			return err
 		}
+		fmt.Print(output)
 	}
-
 	return nil
 }
