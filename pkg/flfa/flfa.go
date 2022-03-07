@@ -1,26 +1,32 @@
 package flfa
 
 import (
-	"github.com/spf13/afero"
+	"github.com/FlagrantGarden/flfa/pkg/flfa/data"
+	"github.com/FlagrantGarden/flfa/pkg/tympan"
 )
 
 type Api struct {
-	AFS             *afero.Afero
-	IOFS            *afero.IOFS
-	RunningConfig   Config
-	CachedTraits    []Trait
-	CachedProfiles  []BaseProfile
-	CachedSpells    []Spell
-	CachedCompanies []Company
+	Tympan          *tympan.Tympan
+	CachedTraits    []data.Trait
+	CachedProfiles  []data.Profile
+	CachedSpells    []data.Spell
+	CachedCompanies []data.Company
 }
 
-func (ffapi *Api) CacheModuleData(path string) {
-	// load base profiles
-	ffapi.CacheBaseProfiles(path)
+func (ffapi *Api) CacheModuleData(modulePath string) {
+	// load profiles
+	profiles, _ := tympan.GetModuleDataByFile[data.Profile](modulePath, "Profiles", ffapi.Tympan.AFS)
+	ffapi.CachedProfiles = append(ffapi.CachedProfiles, profiles...)
 	// load traits
-	ffapi.CacheModuleTraits(path)
+	traits, _ := tympan.GetModuleDataByFolder[data.Trait](modulePath, "Traits", ffapi.Tympan.AFS)
+	ffapi.CachedTraits = append(ffapi.CachedTraits, traits...)
 	// load spells
-	ffapi.CacheModuleSpells(path)
+	spells, _ := tympan.GetModuleDataByFile[data.Spell](modulePath, "Spells", ffapi.Tympan.AFS)
+	ffapi.CachedSpells = append(ffapi.CachedSpells, spells...)
 	// load companies
-	ffapi.CacheModuleCompanies(path)
+	companies, _ := tympan.GetModuleDataByFile[data.Company](modulePath, "Companies", ffapi.Tympan.AFS)
+	for _, company := range companies {
+		company.Initialize(profiles, traits)
+		ffapi.CachedCompanies = append(ffapi.CachedCompanies, company)
+	}
 }

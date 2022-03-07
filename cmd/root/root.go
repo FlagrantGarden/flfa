@@ -111,7 +111,7 @@ func (r *RootCommand) InitConfig() {
 			if err != nil {
 				log.Error().Msgf("failed to initialise %s: %s", ConfigFilePath, err)
 			}
-			r.Api.GenerateDefaultConfig()
+			r.Api.Tympan.GenerateDefaultConfig()
 			viper.WriteConfig()
 		}
 	}
@@ -123,10 +123,10 @@ func (r *RootCommand) InitConfig() {
 	} else {
 		log.Trace().Msgf("Could not load config file '%s' because: %s", r.ConfigFile, err)
 		log.Trace().Msg("Falling back on default config")
-		r.Api.GenerateDefaultConfig()
+		r.Api.Tympan.GenerateDefaultConfig()
 	}
 
-	if err := r.Api.LoadConfig(); err != nil {
+	if err := r.Api.Tympan.LoadConfig(); err != nil {
 		log.Warn().Msgf("Error setting running config: %s", err)
 	}
 }

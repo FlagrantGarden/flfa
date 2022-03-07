@@ -1,6 +1,9 @@
 package flfa
 
-import "os"
+import (
+	"os"
+	"path/filepath"
+)
 
 type State struct {
 	SavePath       string
@@ -12,4 +15,8 @@ type State struct {
 
 func (ffapi *Api) InitializeState(path string) (State, error) {
 	return State{}, nil
+}
+
+func (s *State) Name() string {
+	return filepath.Base(s.SavePath)
 }

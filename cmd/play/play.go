@@ -7,6 +7,7 @@ import (
 
 	"github.com/FlagrantGarden/flfa/pkg/flfa"
 	"github.com/FlagrantGarden/flfa/pkg/terminal_documentation"
+	"github.com/FlagrantGarden/flfa/pkg/tympan"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -42,14 +43,14 @@ func (p *PlayCommand) initializeGameState(cmd *cobra.Command, args []string) err
 		p.SaveFilePath = getSaveFilePath()
 	}
 	log.Trace().Msgf("Using save file at: %s", p.SaveFilePath)
-	log.Trace().Msgf("Loading module data from %s", p.Api.RunningConfig.ModulePath)
-	p.Api.CacheModuleData(filepath.Join(p.Api.RunningConfig.ModulePath, "core"))
+	log.Trace().Msgf("Loading module data from %s", p.Api.Tympan.RunningConfig.ModulePath)
+	p.Api.CacheModuleData(filepath.Join(p.Api.Tympan.RunningConfig.ModulePath, "core"))
 	return nil
 }
 
 func getSaveFilePath() string {
-	filename := fmt.Sprintf("%s.yaml", viper.GetString(flfa.CurrentGameKey))
-	return filepath.Join(viper.GetString(flfa.UserDataPathKey), filename)
+	filename := fmt.Sprintf("%s.yaml", viper.GetString(tympan.CurrentGameKey))
+	return filepath.Join(viper.GetString(tympan.UserDataPathKey), filename)
 }
 
 func (p *PlayCommand) execute(cmd *cobra.Command, args []string) error {
@@ -63,8 +64,8 @@ func (p *PlayCommand) execute(cmd *cobra.Command, args []string) error {
 		fmt.Print(group.JSON())
 	default:
 		groupOutput := strings.Builder{}
-		groupOutput.WriteString("| Name | Base Profile | Melee | Missile | Move | FS | R | T | Traits |\n")
-		groupOutput.WriteString("| ---- | ------------ | ----- | ------- | ---- | -- | - | - | ------ |\n")
+		groupOutput.WriteString("| Name | Profile | Melee | Missile | Move | FS | R | T | Traits |\n")
+		groupOutput.WriteString("| ---- | ------- | ----- | ------- | ---- | -- | - | - | ------ |\n")
 		groupOutput.WriteString(group.MarkdownTableEntry())
 		td := terminal_documentation.TerminalDocumentation{}
 		output, err := td.Render(groupOutput.String())

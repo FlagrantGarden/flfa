@@ -30,6 +30,7 @@ import (
 	cmdVersion "github.com/FlagrantGarden/flfa/cmd/version"
 	"github.com/FlagrantGarden/flfa/pkg/flfa"
 	"github.com/FlagrantGarden/flfa/pkg/telemetry"
+	"github.com/FlagrantGarden/flfa/pkg/tympan"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
@@ -51,9 +52,10 @@ func main() {
 	// Create FLFA context
 	fs := afero.NewOsFs() // use the real file system
 	api := &flfa.Api{
-		AFS:          &afero.Afero{Fs: fs},
-		IOFS:         &afero.IOFS{Fs: fs},
-		CachedTraits: []flfa.Trait{},
+		Tympan: &tympan.Tympan{
+			AFS:  &afero.Afero{Fs: fs},
+			IOFS: &afero.IOFS{Fs: fs},
+		},
 	}
 	// Setup the root command (flfa)
 	root_cmder := &cmdRoot.RootCommand{
