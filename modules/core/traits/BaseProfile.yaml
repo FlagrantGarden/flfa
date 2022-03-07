@@ -1,4 +1,4 @@
-traits:
+entries:
   - name: Defensive
     effect: |
       If this Group is not Shaken, in difficult terrain, or in cover,

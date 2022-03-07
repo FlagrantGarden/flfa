@@ -1,4 +1,4 @@
-spells:
+entries:
   - name: Prompt
     check: 6
     range: 18

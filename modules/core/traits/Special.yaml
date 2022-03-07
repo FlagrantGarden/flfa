@@ -1,4 +1,4 @@
-traits:
+entries:
   - name: Accurate
     effect: Groups with an MI profile only. Improve this Group’s MI to-hit value by 1.
     points: 2

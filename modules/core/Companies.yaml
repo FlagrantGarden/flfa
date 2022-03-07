@@ -1,23 +1,23 @@
-companies:
+entries:
   - name: Bearfolk War Party
     description: |
       Tall, humanoid bears with spears and the mantle of winter.
       Fast, tough, and staunchly dedicated to one another.
     groups:
       - name: Longbraids
-        baseProfileName: Elite Cavalry
+        profileName: Elite Cavalry
         traits:
           - Terrifying
       - name: Aurorans
-        baseProfileName: Heavy Foot
+        profileName: Heavy Foot
         traits:
           - Apprentice
       - name: Hunters
-        baseProfileName: Heavy Cavalry
+        profileName: Heavy Cavalry
         traits:
           - Throwers
       - name: Hunters
-        baseProfileName: Heavy Cavalry
+        profileName: Heavy Cavalry
         traits:
           - Throwers
   - name: Freelance Company
@@ -25,18 +25,18 @@ companies:
       Veteran soldiers cut loose from the powers that bound them, they seek meaning and resources in a bloody world.
     groups:
       - name: Lancers
-        baseProfileName: Elite Cavalry
+        profileName: Elite Cavalry
         traits:
           - Undead-Foe
           - Vicious
       - name: Mounted Crossbows
-        baseProfileName: Light Cavalry
+        profileName: Light Cavalry
       - name: Shieldkin
-        baseProfileName: Heavy Foot
+        profileName: Heavy Foot
         traits:
           - Well-Armed
       - name: Shieldkin
-        baseProfileName: Heavy Foot
+        profileName: Heavy Foot
         traits:
           - Well-Armed
   - name: Necromancer's Legion
@@ -44,20 +44,20 @@ companies:
       The dead rise to the Necromancer's call and do their bidding, held together by malefic energies.
     groups:
       - name: Necromancer & Revenant Knights
-        baseProfileName: Elite Foot
+        profileName: Elite Foot
         traits:
           - Caster
           - Summoner
       - name: Skeleton Rex
-        baseProfileName: Heavy Beast
+        profileName: Heavy Beast
         traits:
           - Unfeeling
       - name: Skeletal Warriors
-        baseProfileName: Light Foot
+        profileName: Light Foot
         traits:
           - Unfeeling
       - name: Skeletal Warriors
-        baseProfileName: Light Foot
+        profileName: Light Foot
         traits:
           - Unfeeling
   - name: Automata
@@ -66,17 +66,17 @@ companies:
       They fulfill their own purpose now, led by a towering Titan.
     groups:
       - name: Titan
-        baseProfileName: Elite Foot
+        profileName: Elite Foot
       - name: Arclight Rifles
-        baseProfileName: Light Foot
+        profileName: Light Foot
         traits:
           - Shooters
       - name: Arclight Blasters
-        baseProfileName: Light Foot
+        profileName: Light Foot
         traits:
           - Throwers
       - name: Barking Sparks
-        baseProfileName: Light Foot
+        profileName: Light Foot
         traits:
           - Self-Destruct
           - Unfeeling
@@ -86,40 +86,40 @@ companies:
       They bring bronze blades and eldritch flame to scour their foes from every beach and every river.
     groups:
       - name: Bronzeclad
-        baseProfileName: Elite Foot
+        profileName: Elite Foot
         traits:
           - Well-Armed
       - name: Slingers
-        baseProfileName: Light Foot
+        profileName: Light Foot
         traits:
           - Shooters
       - name: Flamebearers
-        baseProfileName: Light Engine
+        profileName: Light Engine
         traits:
           - Short-Ranged
       - name: Khopeshi
-        baseProfileName: Light Foot
+        profileName: Light Foot
         traits:
           - Stealthy
       - name: Wyrmkith
-        baseProfileName: Light Beast
+        profileName: Light Beast
   - name: Citizen's Defense Force
     description: |
       A people thrust into conflict—everyone of fighting age has taken up scrounged implements to defend their homes.
     groups:
       - name: First Citizens
-        baseProfileName: Heavy Cavalry
+        profileName: Heavy Cavalry
         traits:
           - Unerring
       - name: Neighborhood Defenders
-        baseProfileName: Light Foot
+        profileName: Light Foot
         traits:
           - Cowardly
           - Shooters
       - name: Street Toughs
-        baseProfileName: Light Foot
+        profileName: Light Foot
         traits:
           - Cowardly
           - Vicious
       - name: Kennel Hounds
-        baseProfileName: Light Beast
+        profileName: Light Beast
