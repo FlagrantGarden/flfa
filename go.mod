@@ -1,6 +1,6 @@
 module github.com/FlagrantGarden/flfa
 
-go 1.17
+go 1.18
 
 require (
 	github.com/Masterminds/semver v1.5.0
@@ -55,7 +55,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	github.com/yuin/goldmark v1.4.7 // indirect
+	github.com/yuin/goldmark v1.4.8 // indirect
 	github.com/yuin/goldmark-emoji v1.0.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.4.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.4.1 // indirect
