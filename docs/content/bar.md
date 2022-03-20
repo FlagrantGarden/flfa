@@ -1,11 +1,11 @@
 ---
-title: "Foo"
-description: "Sometimes you gotta foo."
+title: "Bar"
+description: "Another document of some sort."
 category: narrative
 tags:
   - fundamentals
-  - foo
-weight: 10
+  - bar
+weight: 20
 ---
 
 ## Some Nonsense
