@@ -51,7 +51,7 @@ entries:
     traits:
       - Reckless
       - Defiant
-    points: 4
+    points: 6
   - type: Heavy
     category: Cavalry
     melee:
@@ -158,7 +158,7 @@ entries:
     resolve: 3
     toughness: 4
     points: 5
-  - type: Light
+  - type: Heavy
     category: Foot
     melee:
       activation: 6
@@ -175,7 +175,7 @@ entries:
     traits:
       - Defensive
     points: 4
-  - type: Heavy
+  - type: Light
     category: Foot
     melee:
       activation: 6

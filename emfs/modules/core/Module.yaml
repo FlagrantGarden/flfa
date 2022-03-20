@@ -1,0 +1,10 @@
+module:
+  author: FlagrantGarden
+  id: core
+  display: Core
+  version: "0.1.0"
+  source_url: https://github.com/FlagrantGarden/flfa/modules/core
+  project_url: https://flagrant.garden/games/factions/app/modules/core
+
+configuration:
+  example: true
