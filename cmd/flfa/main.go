@@ -24,19 +24,22 @@ package main
 import (
 	"context"
 
-	cmdExplain "github.com/FlagrantGarden/flfa/cmd/explain"
-	cmdPlay "github.com/FlagrantGarden/flfa/cmd/play"
-	cmdRoot "github.com/FlagrantGarden/flfa/cmd/root"
-	cmdVersion "github.com/FlagrantGarden/flfa/cmd/version"
+	"github.com/FlagrantGarden/flfa/cmd/flfa/play"
+	"github.com/FlagrantGarden/flfa/docs"
+	"github.com/FlagrantGarden/flfa/emfs"
 	"github.com/FlagrantGarden/flfa/pkg/flfa"
-	"github.com/FlagrantGarden/flfa/pkg/telemetry"
 	"github.com/FlagrantGarden/flfa/pkg/tympan"
+	"github.com/FlagrantGarden/flfa/pkg/tympan/dossier"
+	"github.com/FlagrantGarden/flfa/pkg/tympan/forme/explain"
+	"github.com/FlagrantGarden/flfa/pkg/tympan/forme/root"
+	"github.com/FlagrantGarden/flfa/pkg/tympan/forme/version"
+	"github.com/FlagrantGarden/flfa/pkg/tympan/telemetry"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 )
 
 var (
-	version           = "dev"
+	app_version       = "dev"
 	commit            = "none"
 	date              = "unknown"
 	sourceUrl         = "https://github.com/FlagrantGarden/flfa"
@@ -51,43 +54,61 @@ func main() {
 
 	// Create FLFA context
 	fs := afero.NewOsFs() // use the real file system
+	mfs := emfs.GetEmbeddedModulesFS()
 	api := &flfa.Api{
-		Tympan: &tympan.Tympan{
-			AFS:  &afero.Afero{Fs: fs},
-			IOFS: &afero.IOFS{Fs: fs},
+		EMFS: &mfs,
+		Tympan: &tympan.Tympan[*flfa.Configuration]{
+			AFS:           &afero.Afero{Fs: fs},
+			Configuration: &flfa.Configuration{},
+			Metadata: tympan.Metadata{
+				Name:           "flfa",
+				DisplayName:    "Flagrant Factions",
+				Description:    "Play Flagrant Factions from your terminal",
+				FolderName:     "FlagrantFactions",
+				ConfigFileName: "config",
+				SourceUrl:      "https://github.com/FlagrantGarden/flfa",
+				ProjectUrl:     "https://flagrant.garden/games/factions",
+			},
 		},
 	}
 	// Setup the root command (flfa)
-	root_cmder := &cmdRoot.RootCommand{
-		Api:                   api,
-		DefaultConfigFileName: ".flagrant-factions.yaml",
+	root_cmder := &root.RootCommand[*flfa.Configuration]{
+		Tympan: *api.Tympan,
 	}
 	root_cmd := root_cmder.CreateCommand()
-	version_string := cmdVersion.Format(version, date, commit, sourceUrl)
+	version_string := version.Format(api.Tympan.Metadata.Name, app_version, date, commit, api.Tympan.Metadata.SourceUrl)
 	root_cmd.Version = version_string
 	root_cmd.SetVersionTemplate(version_string)
+
 	// Get the command called and its arguments;
 	// The arguments are only necessary if we want to
 	// hand them off as an attribute to the parent span:
 	// do we? Otherwise we just need the calledCommand
-	calledCommand, _ := cmdRoot.GetCalledCommand(root_cmd)
+	calledCommand, _ := root.GetCalledCommand(root_cmd)
 
 	// flfa version
-	version_cmder := &cmdVersion.VersionCommand{
-		Version:   version,
+	version_cmder := &version.VersionCommand{
+		Version:   app_version,
 		BuildDate: date,
 		Commit:    commit,
-		SourceUrl: sourceUrl,
+		Metadata:  api.Tympan.Metadata,
 	}
-	version_cmd := version_cmder.CreateCommand()
-	root_cmd.AddCommand(version_cmd)
+	root_cmd.AddCommand(version_cmder.CreateCommand())
 
 	// flfa explain
-	root_cmd.AddCommand(cmdExplain.CreateCommand())
+	efs := docs.GetDocsFS()
+	explainer := explain.ExplainCommand{
+		Dossier: &dossier.Dossier{
+			AFS: api.Tympan.AFS,
+			EFS: &efs,
+		},
+	}
+	root_cmd.AddCommand(explainer.CreateCommand())
 
 	// flfa play
-	play_cmder := cmdPlay.PlayCommand{
-		Api: api,
+	play_cmder := play.PlayCommand{
+		Api:     api,
+		Dossier: &dossier.Dossier{},
 	}
 	play_cmd := play_cmder.CreateCommand()
 	root_cmd.AddCommand(play_cmd)

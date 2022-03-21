@@ -4,17 +4,14 @@
 param (
   [Parameter()]
   [ValidateSet('build', 'quick', 'package')]
-  [string]
-  $Target = 'build'
+  [string]$Target = 'build'
 )
-$Env:WORKINGDIR = $PSScriptRoot
+$Env:WORKINGDIR = Split-Path -Parent $PSScriptRoot
 
 $arch = go env GOHOSTARCH
 $platform = go env GOHOSTOS
-$BuildFolderPath = Join-Path $PSScriptRoot 'dist' "flfa_${platform}_${arch}"
-$NotelBuildFolderPath = Join-Path $PSScriptRoot 'dist' "notel_flfa_${platform}_${arch}"
-$DocsSource = Join-Path $PSScriptRoot 'docs' 'content' '*'
-$DataSource = Join-Path $PSScriptRoot 'modules' '*'
+$BuildFolderPath = Join-Path $Env:WORKINGDIR 'dist' "flfa_${platform}_${arch}"
+$NotelBuildFolderPath = Join-Path $Env:WORKINGDIR 'dist' "notel_flfa_${platform}_${arch}"
 
 switch ($Target) {
   'build' {
@@ -27,16 +24,6 @@ switch ($Target) {
       $ENV:HONEYCOMB_DATASET = 'not_set'
     }
     goreleaser build --snapshot --rm-dist --single-target
-    # Copy docs content to package folder
-    foreach ($BuildFolderDocs in @("$BuildFolderPath/docs", "$NotelBuildFolderPath/docs")) {
-      $null = New-Item -Path $BuildFolderDocs -ItemType Directory
-      $null = Copy-Item -Path $DocsSource -Destination $BuildFolderDocs -Recurse
-    }
-    # Copy docs content to package folder
-    foreach ($BuildFolderData in @("$BuildFolderPath/modules", "$NotelBuildFolderPath/modules")) {
-      $null = New-Item -Path $BuildFolderData -ItemType Directory
-      $null = Copy-Item -Path $DataSource -Destination $BuildFolderData -Recurse
-    }
   }
   'quick' {
     If ($Env:OS -match '^Windows') {
