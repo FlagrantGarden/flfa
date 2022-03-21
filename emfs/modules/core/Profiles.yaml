@@ -1,0 +1,194 @@
+entries:
+  - type: Heavy
+    category: Beast
+    melee:
+      activation: 5
+      toHitAttacking: 3
+      toHitDefending: 6
+    move:
+      activation: 6
+      Distance: 10
+    fightingStrength:
+      current: 6
+      maximum: 6
+    resolve: 3
+    toughness: 4
+    traits:
+      - Reckless
+    points: 6
+  - type: Light
+    category: Beast
+    melee:
+      activation: 5
+      toHitAttacking: 4
+      toHitDefending: 6
+    move:
+      activation: 6
+      Distance: 12
+    fightingStrength:
+      current: 6
+      maximum: 6
+    resolve: 4
+    toughness: 3
+    traits:
+      - Reckless
+      - Nimble
+    points: 4
+  - type: Elite
+    category: Cavalry
+    melee:
+      activation: 5
+      toHitAttacking: 3
+      toHitDefending: 5
+    move:
+      activation: 7
+      Distance: 10
+    fightingStrength:
+      current: 6
+      maximum: 6
+    resolve: 3
+    toughness: 4
+    traits:
+      - Reckless
+      - Defiant
+    points: 6
+  - type: Heavy
+    category: Cavalry
+    melee:
+      activation: 5
+      toHitAttacking: 4
+      toHitDefending: 5
+    move:
+      activation: 5
+      Distance: 10
+    fightingStrength:
+      current: 6
+      maximum: 6
+    resolve: 4
+    toughness: 3
+    traits:
+      - Defiant
+    points: 4
+  - type: Light
+    category: Cavalry
+    melee:
+      activation: 7
+      toHitAttacking: 5
+      toHitDefending: 6
+    move:
+      activation: 5
+      Distance: 12
+    missile:
+      activation: 6
+      toHit: 5
+      range: 12
+    fightingStrength:
+      current: 6
+      maximum: 6
+    resolve: 5
+    toughness: 3
+    points: 4
+  - type: Elite
+    category: Engine
+    melee:
+      toHitDefending: 5
+    move:
+      activation: 7
+      Distance: 4
+    missile:
+      activation: 5
+      toHit: 4
+      range: 24
+    fightingStrength:
+      current: 6
+      maximum: 6
+    resolve: 4
+    toughness: 3
+    traits:
+      - Ponderous
+    points: 6
+  - type: Heavy
+    category: Engine
+    melee:
+      toHitDefending: 6
+    move:
+      activation: 8
+      Distance: 2
+    missile:
+      activation: 6
+      toHit: 5
+      range: 24
+    fightingStrength:
+      current: 6
+      maximum: 6
+    resolve: 5
+    toughness: 2
+    traits:
+      - Ponderous
+    points: 4
+  - type: Light
+    category: Engine
+    melee:
+      toHitDefending: 6
+    move:
+      activation: 8
+      Distance: 4
+    missile:
+      activation: 6
+      toHit: 5
+      range: 18
+    fightingStrength:
+      current: 6
+      maximum: 6
+    resolve: 5
+    toughness: 1
+    points: 4
+  - type: Elite
+    category: Foot
+    melee:
+      activation: 5
+      toHitAttacking: 3
+      toHitDefending: 4
+    move:
+      activation: 5
+      Distance: 6
+    fightingStrength:
+      current: 12
+      maximum: 12
+    resolve: 3
+    toughness: 4
+    points: 5
+  - type: Heavy
+    category: Foot
+    melee:
+      activation: 6
+      toHitAttacking: 5
+      toHitDefending: 4
+    move:
+      activation: 5
+      Distance: 6
+    fightingStrength:
+      current: 12
+      maximum: 12
+    resolve: 4
+    toughness: 3
+    traits:
+      - Defensive
+    points: 4
+  - type: Light
+    category: Foot
+    melee:
+      activation: 6
+      toHitAttacking: 5
+      toHitDefending: 4
+    move:
+      activation: 5
+      Distance: 8
+    fightingStrength:
+      current: 12
+      maximum: 12
+    resolve: 4
+    toughness: 2
+    traits:
+      - Defensive
+    points: 3

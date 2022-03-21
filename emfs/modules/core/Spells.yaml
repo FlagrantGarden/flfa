@@ -1,0 +1,58 @@
+entries:
+  - name: Prompt
+    check: 6
+    range: 18
+    target: Another Group
+    duration: Until the start of your next turn.
+    effect: Target may reroll when attempting to activate.
+  - name: Embolden
+    check: 6
+    range: 18
+    target: Another Group
+    duration: Until the start of your next turn.
+    effect: Target may reroll when testing Resolve.
+  - name: Heal
+    check: 7
+    range: 18
+    target: Another Group
+    effect: Target gains 1 FS, up to their maximum.
+  - name: Confuse
+    check: 7
+    range: 18
+    target: Another Group
+    duration: Until the start of your next turn.
+    effect: Treat target as Shaken.
+  - name: Entangle
+    check: 7
+    range: 18
+    target: Another Group
+    duration: Until the start of your next turn.
+    effect: Target treats all terrain as difficult.
+  - name: Obscure
+    check: 7
+    range: 18
+    target: Self, Another Group
+    duration: Until the start of your next turn.
+    effect: Target may not be Attacked or Shot at.
+  - name: Projectile
+    check: 7
+    range: 18
+    target: Another Group
+    effect: As Shoot. Hit on 4+ within 12”, or on 5+ at 12-18”.
+  - name: Enrage
+    check: 7
+    range: 18
+    target: Another Group
+    duration: Until the start of your next turn.
+    effect: Target may reroll any number of to-hit dice once in melee.
+  - name: Fortify
+    check: 7
+    range: 18
+    target: Another Group
+    duration: Until the start of your next turn.
+    effect: Target may force enemies to reroll any number of to-hit dice once against them.
+  - name: Counter
+    check: 8
+    range: 18
+    target: Group
+    effect: End any Spell effect on the target as if its duration ended.

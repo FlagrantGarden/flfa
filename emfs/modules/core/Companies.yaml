@@ -1,0 +1,125 @@
+entries:
+  - name: Bearfolk War Party
+    description: |
+      Tall, humanoid bears with spears and the mantle of winter.
+      Fast, tough, and staunchly dedicated to one another.
+    groups:
+      - name: Longbraids
+        profileName: Elite Cavalry
+        traits:
+          - Terrifying
+      - name: Aurorans
+        profileName: Heavy Foot
+        traits:
+          - Apprentice
+      - name: Hunters
+        profileName: Heavy Cavalry
+        traits:
+          - Throwers
+      - name: Hunters
+        profileName: Heavy Cavalry
+        traits:
+          - Throwers
+  - name: Freelance Company
+    description: |
+      Veteran soldiers cut loose from the powers that bound them, they seek meaning and resources in a bloody world.
+    groups:
+      - name: Lancers
+        profileName: Elite Cavalry
+        traits:
+          - Undead-Foe
+          - Vicious
+      - name: Mounted Crossbows
+        profileName: Light Cavalry
+      - name: Shieldkin
+        profileName: Heavy Foot
+        traits:
+          - Well-Armed
+      - name: Shieldkin
+        profileName: Heavy Foot
+        traits:
+          - Well-Armed
+  - name: Necromancer's Legion
+    description: |
+      The dead rise to the Necromancer's call and do their bidding, held together by malefic energies.
+    groups:
+      - name: Necromancer & Revenant Knights
+        profileName: Elite Foot
+        traits:
+          - Caster
+          - Summoner
+      - name: Skeleton Rex
+        profileName: Heavy Beast
+        traits:
+          - Unfeeling
+      - name: Skeletal Warriors
+        profileName: Light Foot
+        traits:
+          - Unfeeling
+      - name: Skeletal Warriors
+        profileName: Light Foot
+        traits:
+          - Unfeeling
+  - name: Automata
+    description: |
+      Cold steel made warm with sentience.
+      They fulfill their own purpose now, led by a towering Titan.
+    groups:
+      - name: Titan
+        profileName: Elite Foot
+      - name: Arclight Rifles
+        profileName: Light Foot
+        traits:
+          - Shooters
+      - name: Arclight Blasters
+        profileName: Light Foot
+        traits:
+          - Throwers
+      - name: Barking Sparks
+        profileName: Light Foot
+        traits:
+          - Self-Destruct
+          - Unfeeling
+  - name: Seafolk
+    description: |
+      Mariners, raiders from the mythic dawn.
+      They bring bronze blades and eldritch flame to scour their foes from every beach and every river.
+    groups:
+      - name: Bronzeclad
+        profileName: Elite Foot
+        traits:
+          - Well-Armed
+      - name: Slingers
+        profileName: Light Foot
+        traits:
+          - Shooters
+      - name: Flamebearers
+        profileName: Light Engine
+        traits:
+          - Short-Ranged
+      - name: Khopeshi
+        profileName: Light Foot
+        traits:
+          - Stealthy
+      - name: Wyrmkith
+        profileName: Light Beast
+  - name: Citizen's Defense Force
+    description: |
+      A people thrust into conflict—everyone of fighting age has taken up scrounged implements to defend their homes.
+    groups:
+      - name: First Citizens
+        profileName: Heavy Cavalry
+        traits:
+          - Unerring
+      - name: Neighborhood Defenders
+        profileName: Light Foot
+        traits:
+          - Cowardly
+          - Shooters
+      - name: Street Toughs
+        profileName: Light Foot
+        traits:
+          - Cowardly
+          - Vicious
+      - name: Kennel Hounds
+        profileName: Light Beast

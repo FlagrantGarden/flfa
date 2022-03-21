@@ -23,3 +23,6 @@ dist/
 
 # Documentation site
 docs/site
+
+# Debug logs
+scripts/.debug.log
