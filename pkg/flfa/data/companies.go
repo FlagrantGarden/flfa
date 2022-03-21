@@ -1,6 +1,8 @@
 package data
 
 import (
+	"fmt"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -38,4 +40,14 @@ func (company *Company) Initialize(availableProfiles []Profile, availableTraits 
 	}
 	company.Groups = groups
 	return nil
+}
+
+func GetCompany(name string, companyList []Company) (Company, error) {
+	log.Trace().Msgf("searching for profile '%s'", name)
+	for _, company := range companyList {
+		if company.Name == name {
+			return company, nil
+		}
+	}
+	return Company{}, fmt.Errorf("no profile found that matches name '%s'", name)
 }
