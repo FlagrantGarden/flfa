@@ -1,64 +1,257 @@
 entries:
   - name: Accurate
+    points: 2
     effect: Groups with an MI profile only. Improve this Group’s MI to-hit value by 1.
-    points: 2
+    scripting:
+      requirements:
+        - baseProfileCan("Shoot")
+      on_add:
+        - improveToHit("Missile", 1)
+      on_remove:
+        - degradeToHit("Missile", 1)
   - name: Apprentice
-    effect: Before the first turn of the skirmish, choose three spells. This Group may activate to Cast one of those three spells.
     points: 2
+    effect: |
+      Before the first turn of the skirmish, choose three spells.
+      This Group may activate to Cast one of those three spells.
+    scripting:
+      in_play:
+        - register_for:
+            - BeforeFirstTurn
+          then:
+            - prompt("ApprenticeTrait")
   - name: Caster
+    points: 4
     effect: This Group may activate to Cast any spell.
-    points: 4
+    scripting:
+      on_add:
+        - addToSpellList("all")
+      on_remove:
+        - removeFromSpellList("all")
   - name: Chariot
+    points: 2
     effect: Cavalry only. +1 T. Treats difficult terrain as impassable terrain.
-    points: 2
+    scripting:
+      requirements:
+        - hasTag("Cavalry")
+      on_add: improveProfile("Toughness", 1)
+      on_remove: degradeProfile("Toughness", 1)
+      in_play:
+        - register_for:
+            - DeterminingMovement
+          then:
+            - treatTerrainAs("difficult", "impassable")
   - name: Composed
+    points: 2
     effect: Groups with the Reckless trait only. Remove Reckless. Improve MO activation by one.
-    points: 2
+    scripting:
+      requirements:
+        - hasTrait("Reckless")
+      on_add:
+        - removeTrait("Reckless")
+        - improveActivation("Move", 1)
+      on_remove:
+        - addTrait("Reckless")
+        - degradeActivation("Move", 1)
   - name: Cowardly
-    effect: When testing Resolve, this Group must reroll the highest die.
     points: -2
-  - name: '[Type]-Foe'
-    effect: Choose an enemy type. This Group gains the Reckless trait against those enemies. If this Group is already Reckless, they must activate to Attack those enemies, if possible. If the chosen enemy type is not in any enemy Company, ignore the point cost of this trait.
+    effect: When testing Resolve, this Group must reroll the highest die.
+    scripting:
+      in_play:
+        - register_for:
+            - PassedResolveTest
+          then:
+            - notify("rerolling highest die due to Cowardly trait...")
+            - reroll("highest")
+  - name: "[Type]-Foe"
     points: 1
-  - name: '[Type]bane'
-    effect: Choose an enemy type. This Group ignores the Terrifying trait for those enemies, and may reroll each to-hit die once each turn when fighting them. If the chosen enemy type is not in any opposing army, ignore the point cost of this trait.
+    effect: |
+      Choose an enemy type. This Group gains the Reckless trait against those enemies.
+      If this Group is already Reckless, they automatically activate to Attack those enemies, if possible.
+      If the chosen enemy type is not in any enemy Company, ignore the point cost of this trait.
+    choices:
+      type: string
+    scripting:
+      on_add: add_foe()
+      on_remove: remove_foe()
+      in_play:
+        - register_for:
+            - GetValidActivations
+          when:
+            - canAttackFoe()
+          then:
+            - limitActivationTo("AttackFoe")
+  - name: "[Type]bane"
     points: 4
+    choices:
+      type: string
+    effect: |
+      Choose an enemy type. This Group ignores the Terrifying trait for those enemies,
+      and may reroll each to-hit die once each turn when fighting them.
+      If the chosen enemy type is not in any opposing army, ignore the point cost of this trait.
+    scripting:
+      on_add:
+        - add_baneOf()
+      on_remove:
+        - remove_baneOf()
+      in_play:
+        - register_for:
+            - ResolveTerrifying
+          then:
+            - ignoreIf(isBaneOf(actor))
+        - register_for:
+            - RolledToHit
+          uses:
+            per_turn: 1
+          when:
+            - isBaneOf(target)
+          then:
+            - prompt("BaneTrait")
   - name: Move Freely
-    effect: This Group ignores all friends, enemies, and terrain while Moving. Cannot end movement overlapping with other models.
     points: 2
+    effect: |
+      This Group ignores all friends, enemies, and terrain while Moving.
+      Cannot end movement overlapping with other models.
+    scripting:
+      in_play:
+        - register_for:
+            - DeterminingMovement
+          then:
+            - treatTerrainAs("Impassable", "Normal")
+            - treatTerrainAs("Difficult", "Normal")
   - name: Offensive
     effect: Groups with the Defensive trait only. Remove Defensive. Improve ME to-hit by 1 when Attacking.
     points: 2
+    scripting:
+      requirements:
+        - hasTrait("Defensive")
+      on_add:
+        - removeTrait("Defensive")
+        - improveToHit("Attacking", 1)
+      on_remove:
+        - addTrait("Defensive")
+        - degradeToHit("Attacking", 1)
   - name: Self-Destruct
-    effect: This Group may attempt to activate on 5+ to self-destruct (as if Shooting everything within 6”, hitting on 3+). At the end of an activation in which they self-destruct, this Group is Routed.
     points: 2
+    effect: |
+      This Group may attempt to activate on 5+ to self-destruct (as if Shooting everything within 6”, hitting on 3+).
+      At the end of an activation in which they self-destruct, this Group is Routed.
+    scripting:
+      in_play:
+        - register_for:
+            - GetValidActivations
+          then:
+            - addActivationOption("Self-Destruct")
   - name: Shooters
+    points: 2
     effect: Groups without an MI profile only. Add an MI profile at 6+ / 5+ / 18”.
-    points: 2
+    scripting:
+      requirements:
+        - baseProfileCannot("Shoot")
+      on_add:
+        - addMissileProfile(6, 5, 18)
+      on_remove:
+        - removeMissileProfile()
   - name: Short-Ranged
-    effect: Groups with an MI profile only. Reduce range by half.
     points: -1
+    effect: Groups with an MI profile only. Reduce range by half.
+    scripting:
+      requirements:
+        - baseProfileCan("Shoot")
+      on_add:
+        - multiplyMissileRangeBy(0.5)
+      on_remove:
+        - multiplyMissileRangeBy(2)
   - name: Stealthy
-    effect: Enemies cannot Shoot this Group. This Group does not block line of sight, except for Groups in melee with them.
     points: 3
+    effect: |
+      Enemies cannot Shoot this Group. This Group does not block line of sight, except for Groups in melee with them.
+    scripting:
+      in_play:
+        - register_for:
+            - GetValidActivations
+          applies_to: enemies
+          then:
+            - ignoreForTargetList("Shooting", {{guid}})
   - name: Summoner
-    effect: This Group may attempt to activate on 6+ to summon an undeployed Group within 12” (and no closer than 6” to an enemy). The summoned Group may attempt to activate this turn.
     points: 3
+    effect: |
+      This Group may attempt to activate on 6+ to summon an undeployed Group within 12” (and no closer than 6” to an enemy).
+      The summoned Group may attempt to activate this turn.
+    scripting:
+      in_play:
+        - register_for:
+            - GetValidActivations
+          then:
+            - addActivationOption("Summon")
   - name: Terrifying
-    effect: While being Attacked by this Group, enemies must reroll their highest die when testing Resolve.
     points: 2
+    effect: While being Attacked by this Group, enemies must reroll their highest die when testing Resolve.
+    tags:
+      - fear
+    scripting:
+      in_play:
+        - register_for:
+            - PassedResolveTest
+          applies_to: enemies
+          when:
+            - actorIs({{guid}})
+          then:
+            - notify("rerolling highest die due to Terrifying enemy...")
+            - reroll("highest")
   - name: Throwers
+    points: 1
     effect: Groups without an MI profile only. Add an MI profile at 6+ / 5+ / 6”.
-    points: 1
+    scripting:
+      requirements:
+        - baseProfileCannot("Shoot")
+      on_add:
+        - addMissileProfile(6, 5, 6)
+      on_remove:
+        - removeMissileProfile()
   - name: Unerring
+    points: 3
     effect: Once each turn, this Group may reroll any dice that miss when rolling to hit.
-    points: 3
+    scripting:
+      in_play:
+        - register_for:
+            - RolledToHit
+          uses:
+            per_turn: 1
+          when: missedAny()
+          then:
+            - prompt("UnerringTrait")
   - name: Unfeeling
-    effect: This Group automatically passes when testing Resolve. Round up hits inflicted against this Group.
     points: 0
+    effect: This Group automatically passes when testing Resolve. Round up hits inflicted against this Group.
+    scripting:
+      on_add:
+        - addOverride("RoundReceivedHits", "Up")
+      on_remove:
+        - removeOverride("RoundReceivedHits")
+      in_play:
+        - register_for:
+            - ShouldTestResolve
+          then:
+            - SkipResolveTest()
   - name: Vicious
-    effect: When this Group rolls to hit, each 6 inflicts two hits instead.
     points: 3
+    effect: When this Group rolls to hit, each 6 inflicts two hits instead.
+    scripting:
+      in_play:
+        - register_for:
+            - CountingInflictedHits
+          then:
+            - improveHitCount(multiplyHitsOf(hits, 6, 2))
   - name: Well-Armed
-    effect: Once each turn, this Group may reroll all 1s when rolling to hit.
     points: 1
+    effect: Once each turn, this Group may reroll all 1s when rolling to hit.
+    scripting:
+      in_play:
+        - register_for:
+            - RolledToHit
+          uses:
+            per_turn: 1
+          when: rolledAny(1)
+          then:
+            - prompt("Well-Armed")
