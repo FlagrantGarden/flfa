@@ -4,55 +4,62 @@ entries:
     effect: Groups with an MI profile only. Improve this Group’s MI to-hit value by 1.
     scripting:
       requirements:
-        - baseProfileCan("Shoot")
+        - core.Group.Profile.Base.Can.Shoot(base_profile)
       on_add:
-        - improveToHit("Missile", 1)
+        - core.Group.Profile.Missile.ToHit.Improve(1, group)
       on_remove:
-        - degradeToHit("Missile", 1)
+        - core.Group.Profile.Missile.ToHit.Degrade(1, group)
   - name: Apprentice
     points: 2
     effect: |
       Before the first turn of the skirmish, choose three spells.
       This Group may activate to Cast one of those three spells.
     scripting:
+      requirements:
+        - core.Group.Profile.Trait.NotHas("Caster", profile)
       in_play:
         - register_for:
             - BeforeFirstTurn
           then:
-            - prompt("ApprenticeTrait")
+            - core.Play.Prompt("ApprenticeTrait")
   - name: Caster
     points: 4
     effect: This Group may activate to Cast any spell.
     scripting:
-      on_add:
-        - addToSpellList("all")
-      on_remove:
-        - removeFromSpellList("all")
+      requirements:
+        - core.Group.Profile.Trait.NotHas("Apprentice", profile)
+      in_play:
+        - register_for:
+            - BeforeFirstTurn
+          then:
+            - core.Group.AddToSpellList("all")
   - name: Chariot
     points: 2
     effect: Cavalry only. +1 T. Treats difficult terrain as impassable terrain.
     scripting:
       requirements:
-        - hasTag("Cavalry")
-      on_add: improveProfile("Toughness", 1)
-      on_remove: degradeProfile("Toughness", 1)
+        - core.Group.Profile.Base.Name.Match("Cavalry", base_profile)
+      on_add:
+        - core.Group.Profile.Toughness.Improve(1, group)
+      on_remove:
+        - core.Group.Profile.Toughness.Degrade(1, group)
       in_play:
         - register_for:
             - DeterminingMovement
           then:
-            - treatTerrainAs("difficult", "impassable")
+            - core.Group.TreatTerrainAs("difficult", "impassable", group)
   - name: Composed
     points: 2
     effect: Groups with the Reckless trait only. Remove Reckless. Improve MO activation by one.
     scripting:
       requirements:
-        - hasTrait("Reckless")
+        - core.Group.Profile.Trait.Has("Reckless", profile)
       on_add:
-        - removeTrait("Reckless")
-        - improveActivation("Move", 1)
+        - core.Group.Profile.Trait.Remove("Reckless", group)
+        - core.Group.Profile.Move.Activation.Improve(1, group)
       on_remove:
-        - addTrait("Reckless")
-        - degradeActivation("Move", 1)
+        - core.Group.Profile.Trait.Add("Reckless", group)
+        - core.Group.Profile.Move.Activation.Degrade(1, group)
   - name: Cowardly
     points: -2
     effect: When testing Resolve, this Group must reroll the highest die.
@@ -61,52 +68,60 @@ entries:
         - register_for:
             - PassedResolveTest
           then:
-            - notify("rerolling highest die due to Cowardly trait...")
-            - reroll("highest")
-  - name: "[Type]-Foe"
+            - core.Play.Notify("rerolling highest die due to Cowardly trait...")
+            - dice.Reroll("highest", result)
+  - name: "[Kind]-Foe"
     points: 1
     effect: |
-      Choose an enemy type. This Group gains the Reckless trait against those enemies.
+      Choose an enemy kind. This Group gains the Reckless trait against those enemies.
       If this Group is already Reckless, they automatically activate to Attack those enemies, if possible.
-      If the chosen enemy type is not in any enemy Company, ignore the point cost of this trait.
+      If the chosen enemy kind is not in any enemy Company, ignore the point cost of this trait.
     choices:
-      type: string
+      - name: Kind
+        prompt:
+          type: text
+          message: Who is this group the foe of?
     scripting:
-      on_add: add_foe()
-      on_remove: remove_foe()
+      on_add:
+        - core.Group.Addenda.Foe.Add(choices.Kind, group)
+      on_remove:
+        - core.Group.Addenda.Foe.Remove(choices.Kind, group)
       in_play:
         - register_for:
             - GetValidActivations
           when:
-            - canAttackFoe()
+            - core.Traits.CanAttackFoe(actor)
           then:
-            - limitActivationTo("AttackFoe")
-  - name: "[Type]bane"
+            - core.Play.LimitActivationTo("AttackFoe", actor)
+  - name: "[Kind]bane"
     points: 4
     choices:
-      type: string
+      - name: Kind
+        prompt:
+          type: text
+          message: Who is this group the bane of?
     effect: |
-      Choose an enemy type. This Group ignores the Terrifying trait for those enemies,
+      Choose an enemy kind. This Group ignores the Terrifying trait for those enemies,
       and may reroll each to-hit die once each turn when fighting them.
-      If the chosen enemy type is not in any opposing army, ignore the point cost of this trait.
+      If the chosen enemy kind is not in any opposing army, ignore the point cost of this trait.
     scripting:
       on_add:
-        - add_baneOf()
+        - core.Group.Addenda.Bane.Add(choices.Kind, group)
       on_remove:
-        - remove_baneOf()
+        - core.Group.Addenda.Bane.Remove(choices.Kind, group)
       in_play:
         - register_for:
             - ResolveTerrifying
           then:
-            - ignoreIf(isBaneOf(actor))
+            - core.Traits.IgnoreIf(core.Traits.IsBaneOf(actor, target))
         - register_for:
             - RolledToHit
           uses:
             per_turn: 1
           when:
-            - isBaneOf(target)
+            - core.Traits.IsBaneOf(target, actor)
           then:
-            - prompt("BaneTrait")
+            - core.Play.Prompt("BaneTrait")
   - name: Move Freely
     points: 2
     effect: |
@@ -117,20 +132,20 @@ entries:
         - register_for:
             - DeterminingMovement
           then:
-            - treatTerrainAs("Impassable", "Normal")
-            - treatTerrainAs("Difficult", "Normal")
+            - core.Group.TreatTerrainAs("Impassable", "Normal", group)
+            - core.Group.TreatTerrainAs("Difficult", "Normal", group)
   - name: Offensive
     effect: Groups with the Defensive trait only. Remove Defensive. Improve ME to-hit by 1 when Attacking.
     points: 2
     scripting:
       requirements:
-        - hasTrait("Defensive")
+        - core.Group.Profile.Trait.Has("Defensive", profile)
       on_add:
-        - removeTrait("Defensive")
-        - improveToHit("Attacking", 1)
+        - core.Group.Profile.Trait.Remove("Defensive", group)
+        - core.Group.Profile.Melee.ToHit.Attacking.Improve(1, group)
       on_remove:
-        - addTrait("Defensive")
-        - degradeToHit("Attacking", 1)
+        - core.Group.Profile.Trait.Add("Defensive", group)
+        - core.Group.Profile.Melee.ToHit.Attacking.Degrade(1, group)
   - name: Self-Destruct
     points: 2
     effect: |
@@ -141,27 +156,27 @@ entries:
         - register_for:
             - GetValidActivations
           then:
-            - addActivationOption("Self-Destruct")
+            - core.Play.AddActivationOption("Self-Destruct")
   - name: Shooters
     points: 2
     effect: Groups without an MI profile only. Add an MI profile at 6+ / 5+ / 18”.
     scripting:
       requirements:
-        - baseProfileCannot("Shoot")
+        - core.Group.Profile.Base.Cant.Shoot(base_profile)
       on_add:
-        - addMissileProfile(6, 5, 18)
+        - core.Group.Profile.Missile.AddProfile(6, 5, 18, group)
       on_remove:
-        - removeMissileProfile()
+        - core.Group.Profile.Missile.RemoveProfile(group)
   - name: Short-Ranged
     points: -1
     effect: Groups with an MI profile only. Reduce range by half.
     scripting:
       requirements:
-        - baseProfileCan("Shoot")
+        - core.Group.Profile.Base.Can.Shoot(base_profile)
       on_add:
-        - multiplyMissileRangeBy(0.5)
+        - core.Group.Profile.Missile.Range.MultiplyBy(0.5, group)
       on_remove:
-        - multiplyMissileRangeBy(2)
+        - core.Group.Profile.Missile.Range.MultiplyBy(2, group)
   - name: Stealthy
     points: 3
     effect: |
@@ -172,7 +187,7 @@ entries:
             - GetValidActivations
           applies_to: enemies
           then:
-            - ignoreForTargetList("Shooting", {{guid}})
+            - core.Activation.IgnoreForTargetList("Shooting", {{guid}})
   - name: Summoner
     points: 3
     effect: |
@@ -183,7 +198,7 @@ entries:
         - register_for:
             - GetValidActivations
           then:
-            - addActivationOption("Summon")
+            - core.Activation.AddOption("Summon")
   - name: Terrifying
     points: 2
     effect: While being Attacked by this Group, enemies must reroll their highest die when testing Resolve.
@@ -195,20 +210,20 @@ entries:
             - PassedResolveTest
           applies_to: enemies
           when:
-            - actorIs({{guid}})
+            - core.Play.ActorIs({{guid}})
           then:
-            - notify("rerolling highest die due to Terrifying enemy...")
-            - reroll("highest")
+            - core.Play.Notify("rerolling highest die due to Terrifying enemy...")
+            - dice.Reroll("highest", result)
   - name: Throwers
     points: 1
     effect: Groups without an MI profile only. Add an MI profile at 6+ / 5+ / 6”.
     scripting:
       requirements:
-        - baseProfileCannot("Shoot")
+        - core.Group.Profile.Base.Cant.Shoot(base_profile)
       on_add:
-        - addMissileProfile(6, 5, 6)
+        - core.Group.Profile.Missile.AddProfile(6, 5, 6, group)
       on_remove:
-        - removeMissileProfile()
+        - core.Group.Profile.Missile.RemoveProfile(group)
   - name: Unerring
     points: 3
     effect: Once each turn, this Group may reroll any dice that miss when rolling to hit.
@@ -218,22 +233,22 @@ entries:
             - RolledToHit
           uses:
             per_turn: 1
-          when: missedAny()
+          when: core.Play.MissedAny()
           then:
-            - prompt("UnerringTrait")
+            - core.Play.Prompt("UnerringTrait")
   - name: Unfeeling
     points: 0
     effect: This Group automatically passes when testing Resolve. Round up hits inflicted against this Group.
     scripting:
       on_add:
-        - addOverride("RoundReceivedHits", "Up")
+        - core.Group.Addenda.Override.Add("RoundReceivedHits", "Up", group)
       on_remove:
-        - removeOverride("RoundReceivedHits")
+        - core.Group.Addenda.Override.Remove("RoundReceivedHits", group)
       in_play:
         - register_for:
             - ShouldTestResolve
           then:
-            - SkipResolveTest()
+            - core.Play.SkipResolveTest()
   - name: Vicious
     points: 3
     effect: When this Group rolls to hit, each 6 inflicts two hits instead.
@@ -242,7 +257,7 @@ entries:
         - register_for:
             - CountingInflictedHits
           then:
-            - improveHitCount(multiplyHitsOf(hits, 6, 2))
+            - core.Hits.ImproveHitCount(core.Hits.MultiplyHitsOf(hits, 6, 2))
   - name: Well-Armed
     points: 1
     effect: Once each turn, this Group may reroll all 1s when rolling to hit.
@@ -252,6 +267,6 @@ entries:
             - RolledToHit
           uses:
             per_turn: 1
-          when: rolledAny(1)
+          when: core.Hits.RolledAny(1)
           then:
-            - prompt("Well-Armed")
+            - core.Play.Prompt("Well-Armed")
