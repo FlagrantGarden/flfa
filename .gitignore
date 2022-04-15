@@ -26,3 +26,6 @@ docs/site
 
 # Debug logs
 scripts/.debug.log
+
+# Scratchpad for poking about
+scratchpad.go
