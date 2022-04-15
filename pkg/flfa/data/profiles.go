@@ -13,7 +13,7 @@ type Profile struct {
 	Melee            Melee
 	Move             Move
 	Missile          Missile
-	FightingStrength FightingStrength
+	FightingStrength FightingStrength `mapstructure:"fighting_strength"`
 	Resolve          int
 	Toughness        int
 	Traits           []string
@@ -47,7 +47,7 @@ func GetProfileTraits(profile Profile, traitList []Trait) []Trait {
 	traits := []Trait{}
 	for _, traitName := range profile.Traits {
 		trait := GetTraitByName(traitName, traitList)
-		if (trait != Trait{}) {
+		if trait.Name != "" {
 			traits = append(traits, trait)
 		}
 	}

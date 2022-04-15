@@ -1,6 +1,8 @@
 package data
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type FightingStrength struct {
 	Current int

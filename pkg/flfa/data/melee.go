@@ -7,8 +7,8 @@ import (
 
 type Melee struct {
 	Activation     int
-	ToHitAttacking int
-	ToHitDefending int
+	ToHitAttacking int `mapstructure:"to_hit_attacking"`
+	ToHitDefending int `mapstructure:"to_hit_defending"`
 }
 
 func (melee *Melee) String() string {
