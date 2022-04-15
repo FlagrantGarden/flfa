@@ -1,0 +1,59 @@
+package persona
+
+import (
+	"github.com/FlagrantGarden/flfa/pkg/flfa/tui/persona/prompts"
+	tea "github.com/charmbracelet/bubbletea"
+)
+
+type SubstateChoosing int
+
+const (
+	SelectingPersona SubstateChoosing = iota
+)
+
+func (state SubstateChoosing) Start(model *Model) (cmd tea.Cmd) {
+	switch model.Substate.Choosing {
+	case SelectingPersona:
+		model.Selection = prompts.ChoosePersonaModel(model.Api.Cache.Personas)
+		cmd = model.Selection.Init()
+	}
+
+	return cmd
+}
+
+func (state SubstateChoosing) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
+	switch model.Substate.Choosing {
+	case SelectingPersona:
+		cmd = model.UpdateSelectingPersona()
+	}
+
+	return cmd
+}
+
+func (state SubstateChoosing) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
+	// TODO
+	return cmd
+}
+
+func (state SubstateChoosing) UpdateOnEnded(model *Model) (cmd tea.Cmd) {
+	// no states have submodels that send an ended message
+	return cmd
+}
+
+func (state SubstateChoosing) UpdateOnFallThrough(model *Model, msg tea.Msg) (cmd tea.Cmd) {
+	switch model.Substate.Choosing {
+	case SelectingPersona:
+		_, cmd = model.Selection.Update(msg)
+	}
+
+	return cmd
+}
+
+func (state SubstateChoosing) View(model *Model) (view string) {
+	switch state {
+	case SelectingPersona:
+		view = model.Selection.View()
+	}
+
+	return view
+}
