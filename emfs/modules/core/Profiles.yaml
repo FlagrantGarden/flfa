@@ -3,12 +3,12 @@ entries:
     category: Beast
     melee:
       activation: 5
-      toHitAttacking: 3
-      toHitDefending: 6
+      to_hit_attacking: 3
+      to_hit_defending: 6
     move:
       activation: 6
       Distance: 10
-    fightingStrength:
+    fighting_strength:
       current: 6
       maximum: 6
     resolve: 3
@@ -20,12 +20,12 @@ entries:
     category: Beast
     melee:
       activation: 5
-      toHitAttacking: 4
-      toHitDefending: 6
+      to_hit_attacking: 4
+      to_hit_defending: 6
     move:
       activation: 6
       Distance: 12
-    fightingStrength:
+    fighting_strength:
       current: 6
       maximum: 6
     resolve: 4
@@ -38,12 +38,12 @@ entries:
     category: Cavalry
     melee:
       activation: 5
-      toHitAttacking: 3
-      toHitDefending: 5
+      to_hit_attacking: 3
+      to_hit_defending: 5
     move:
       activation: 7
       Distance: 10
-    fightingStrength:
+    fighting_strength:
       current: 6
       maximum: 6
     resolve: 3
@@ -56,12 +56,12 @@ entries:
     category: Cavalry
     melee:
       activation: 5
-      toHitAttacking: 4
-      toHitDefending: 5
+      to_hit_attacking: 4
+      to_hit_defending: 5
     move:
       activation: 5
       Distance: 10
-    fightingStrength:
+    fighting_strength:
       current: 6
       maximum: 6
     resolve: 4
@@ -73,16 +73,16 @@ entries:
     category: Cavalry
     melee:
       activation: 7
-      toHitAttacking: 5
-      toHitDefending: 6
+      to_hit_attacking: 5
+      to_hit_defending: 6
     move:
       activation: 5
       Distance: 12
     missile:
       activation: 6
-      toHit: 5
+      to_hit: 5
       range: 12
-    fightingStrength:
+    fighting_strength:
       current: 6
       maximum: 6
     resolve: 5
@@ -91,15 +91,15 @@ entries:
   - type: Elite
     category: Engine
     melee:
-      toHitDefending: 5
+      to_hit_defending: 5
     move:
       activation: 7
       Distance: 4
     missile:
       activation: 5
-      toHit: 4
+      to_hit: 4
       range: 24
-    fightingStrength:
+    fighting_strength:
       current: 6
       maximum: 6
     resolve: 4
@@ -110,15 +110,15 @@ entries:
   - type: Heavy
     category: Engine
     melee:
-      toHitDefending: 6
+      to_hit_defending: 6
     move:
       activation: 8
       Distance: 2
     missile:
       activation: 6
-      toHit: 5
+      to_hit: 5
       range: 24
-    fightingStrength:
+    fighting_strength:
       current: 6
       maximum: 6
     resolve: 5
@@ -129,15 +129,15 @@ entries:
   - type: Light
     category: Engine
     melee:
-      toHitDefending: 6
+      to_hit_defending: 6
     move:
       activation: 8
       Distance: 4
     missile:
       activation: 6
-      toHit: 5
+      to_hit: 5
       range: 18
-    fightingStrength:
+    fighting_strength:
       current: 6
       maximum: 6
     resolve: 5
@@ -147,12 +147,12 @@ entries:
     category: Foot
     melee:
       activation: 5
-      toHitAttacking: 3
-      toHitDefending: 4
+      to_hit_attacking: 3
+      to_hit_defending: 4
     move:
       activation: 5
       Distance: 6
-    fightingStrength:
+    fighting_strength:
       current: 12
       maximum: 12
     resolve: 3
@@ -162,12 +162,12 @@ entries:
     category: Foot
     melee:
       activation: 6
-      toHitAttacking: 5
-      toHitDefending: 4
+      to_hit_attacking: 5
+      to_hit_defending: 4
     move:
       activation: 5
       Distance: 6
-    fightingStrength:
+    fighting_strength:
       current: 12
       maximum: 12
     resolve: 4
@@ -179,12 +179,12 @@ entries:
     category: Foot
     melee:
       activation: 6
-      toHitAttacking: 5
-      toHitDefending: 4
+      to_hit_attacking: 5
+      to_hit_defending: 4
     move:
       activation: 5
       Distance: 8
-    fightingStrength:
+    fighting_strength:
       current: 12
       maximum: 12
     resolve: 4
