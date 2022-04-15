@@ -5,27 +5,32 @@ import (
 	"path/filepath"
 
 	"github.com/FlagrantGarden/flfa/pkg/flfa/data"
+	"github.com/FlagrantGarden/flfa/pkg/flfa/scripting"
 	"github.com/FlagrantGarden/flfa/pkg/flfa/state/skirmish"
 	"github.com/FlagrantGarden/flfa/pkg/flfa/state/user"
 	"github.com/FlagrantGarden/flfa/pkg/tympan"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/module"
+	tympan_scripting "github.com/FlagrantGarden/flfa/pkg/tympan/module/scripting"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/state"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/state/instance"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/state/persona"
 )
 
 type Api struct {
-	Tympan *tympan.Tympan[*Configuration]
-	EMFS   *embed.FS
-	Cache  DataCache
+	Tympan       *tympan.Tympan[*Configuration]
+	EMFS         *embed.FS
+	Cache        DataCache
+	ScriptEngine *tympan_scripting.Engine
 }
 
 type DataCache struct {
-	Traits    []data.Trait
-	Profiles  []data.Profile
-	Spells    []data.Spell
-	Companies []data.Company
-	Personas  []*persona.Persona[user.Data, user.Settings]
+	Traits          []data.Trait
+	Profiles        []data.Profile
+	Spells          []data.Spell
+	Companies       []data.Company
+	Personas        []*persona.Persona[user.Data, user.Settings]
+	ScriptModules   []tympan_scripting.Module
+	ScriptLibraries []tympan_scripting.Library
 }
 
 type Configuration struct {
@@ -35,6 +40,12 @@ type Configuration struct {
 
 func (config *Configuration) Initialize() error {
 	return nil
+}
+
+func (ffapi *Api) InitializeEngine() {
+	if ffapi.ScriptEngine == nil {
+		ffapi.ScriptEngine = scripting.NewEngine(ffapi.Cache.ScriptModules, ffapi.Cache.ScriptLibraries)
+	}
 }
 
 func (ffapi *Api) CacheModuleData(modulePath string, embedded bool) {
@@ -73,6 +84,22 @@ func (ffapi *Api) CacheModuleData(modulePath string, embedded bool) {
 		company.Initialize(profiles, traits)
 		ffapi.Cache.Companies = append(ffapi.Cache.Companies, company)
 	}
+	// load script libraries
+	var scriptLibraries []tympan_scripting.Library
+	if embedded {
+		scriptLibraries, _ = tympan_scripting.GetEmbeddedStandaloneLibraries(modulePath, ffapi.EMFS)
+	} else {
+		scriptLibraries, _ = tympan_scripting.GetStandaloneLibraries(modulePath, ffapi.Tympan.AFS)
+	}
+	ffapi.Cache.ScriptLibraries = append(ffapi.Cache.ScriptLibraries, scriptLibraries...)
+	// load script modules
+	var scriptModule tympan_scripting.Module
+	if embedded {
+		scriptModule, _ = tympan_scripting.GetEmbeddedModule(modulePath, ffapi.EMFS)
+	} else {
+		scriptModule, _ = tympan_scripting.GetModule(modulePath, ffapi.Tympan.AFS)
+	}
+	ffapi.Cache.ScriptModules = append(ffapi.Cache.ScriptModules, scriptModule)
 }
 
 func (ffapi *Api) InstalledModules() (installedModules []string, err error) {
