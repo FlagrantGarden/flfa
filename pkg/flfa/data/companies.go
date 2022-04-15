@@ -29,7 +29,7 @@ func (company *Company) Initialize(availableProfiles []Profile, availableTraits 
 		if index == 0 {
 			log.Trace().Msgf("initializing Group '%s' as Captain", group.Name)
 			if group.Captain.Name == "" {
-				group.MakeCaptain("", availableTraits)
+				group.PromoteToCaptain(nil, FilterTraitsBySource("core", availableTraits)...)
 			} else {
 				group.Captain = groupData.Captain
 			}
@@ -40,6 +40,14 @@ func (company *Company) Initialize(availableProfiles []Profile, availableTraits 
 	}
 	company.Groups = groups
 	return nil
+}
+
+func (company Company) Points() (points int) {
+	for _, group := range company.Groups {
+		points += group.Points
+	}
+
+	return
 }
 
 func GetCompany(name string, companyList []Company) (Company, error) {

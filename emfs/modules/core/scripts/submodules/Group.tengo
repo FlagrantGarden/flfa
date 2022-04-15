@@ -1,0 +1,6 @@
+// The group submodule exports the following submodules:
+// - Profile
+export {
+  Profile: import("GroupProfile"),
+  Addenda: import("GroupAddenda")
+}

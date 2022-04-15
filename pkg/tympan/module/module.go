@@ -250,8 +250,6 @@ func GetEmbeddedDataByFolder[T CachableWithSubtype[T]](modulePath string, dataFo
 				entry = entry.WithSubtype(subtype)
 				returnEntries = append(returnEntries, entry)
 			}
-
-			returnEntries = append(returnEntries, entries...)
 		}
 		return nil
 	})

@@ -7,7 +7,7 @@ import (
 
 type Missile struct {
 	Activation int
-	ToHit      int
+	ToHit      int `mapstructure:"to_hit"`
 	Range      int
 }
 

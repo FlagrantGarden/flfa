@@ -18,3 +18,9 @@ func Find(source []string, match string) (matches []string) {
 	}
 	return
 }
+
+// Returns the input slice without the entry at the specified index.
+func RemoveIndex[T any](slice []T, index int) (returnSlice []T) {
+	returnSlice = append(returnSlice, slice[:index]...)
+	return append(returnSlice, slice[index+1:]...)
+}

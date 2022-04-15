@@ -1,0 +1,84 @@
+enum := import("enum")
+
+// Addenda provides helper functions for updating the Addenda field of a group to change information about the Group
+// that can not be structurally captured in go due to the potentially dynamic nature of the available options.
+export {
+  Override: {
+    // Adds a new override setting or updates an existing one to change how the group behaves with other scripted rules.
+    // Parameters:
+    // - key (`string`): the scripted behavior you want to override
+    // - value (`any`): what value the script should use instead
+    // - group (`map`): the group to apply the override to
+    Add: func(key, value, group){
+      if group["addenda"]["override"] == undefined {
+        group["addenda"]["override"] = {}
+      }
+      group["addenda"]["override"][key] = value
+    },
+    // Remove an override setting if it exists.
+    // Parameters:
+    // - key (`string`): the name of the scripted behavior to no longer override
+    // - group (`map`): the group to remove the override from
+    Remove: func(key, group){
+      delete(group["addenda"]["override"], key)
+    }
+  },
+  Foe: {
+    // Add a specified foe to a group's list of foes. Required for the [Kind]-Foe trait.
+    // Parameters:
+    // - kind (`string`): the tag that an enemy group must have to trigger the trait.
+    // - group (`map`): the group whose foe-list should be updated.
+    Add: func(kind, group) {
+      if group["addenda"]["foes"] == undefined {
+        group["addenda"]["foes"] = [kind]
+      } else {
+        group["addenda"]["foes"] = append(group["addenda"]["foes"], kind)
+      }
+    },
+    // Removes a specified foe from a group's list of foes. Required for the [Kind]-Foe trait.
+    // Parameters:
+    // - kind (`string`): the tag that an enemy group must have to trigger the trait.
+    // - group (`map`): the group whose foe-list should be updated.
+    Remove: func(kind, group) {
+      if is_array(group["addenda"]["foes"]) {
+        updatedFoeList := enum.filter(group["addenda"]["foes"], func(_, foe) {
+          return foe != kind
+        })
+        group["addenda"]["foes"] = []
+        group["addenda"]["foes"] = updatedFoeList
+      }
+    }
+  },
+  Bane: {
+    // Add a specified tag a group is the bane of. Required for the [Kind]bane trait.
+    // Parameters:
+    // - kind (`string`): the tag that an enemy group must have to trigger the trait.
+    // - group (`map`): the group whose bane-of list should be updated.
+    Add: func(kind, group) {
+      if group["addenda"]["bane_of"] == undefined {
+        group["addenda"]["bane_of"] = [kind]
+      } else {
+        group["addenda"]["bane_of"] = append(group["addenda"]["bane_of"], kind)
+      }
+    },
+    // Remove a specified tag a group is the bane of. Required for the [Kind]bane trait.
+    // Parameters:
+    // - kind (`string`): the tag that an enemy group must have to trigger the trait.
+    // - group (`map`): the group whose bane-of list should be updated.
+    Remove: func(kind, group) {
+      if is_array(group["addenda"]["bane_of"]) {
+        updatedBaneOf := enum.filter(group["addenda"]["bane_of"], func(_, foe) {
+          return foe != kind
+        })
+        group["addenda"]["bane_of"] = []
+        group["addenda"]["bane_of"] = updatedBaneOf
+      }
+    }
+  },
+  Spells: {
+    // Stub for adding a spell to a group's list
+    Add: func(name, availableSpells, group) {},
+    // Stub for removing a spell from a group's list
+    Remove: func(name, group) {}
+  }
+}

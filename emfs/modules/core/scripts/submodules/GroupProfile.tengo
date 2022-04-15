@@ -1,0 +1,440 @@
+enum := import("enum")
+text := import("text")
+
+// Modifies the to-hit value for a group. Private.
+// Parameters:
+// - type (`string`): the to-hit value to modify. Must be one of: shooting, attacking, defending. Case insensitive.
+// - value (`int`):  the amount to improve/degrade the to-hit value by.
+// - profile (`map`): the group profile to modify.
+update_to_hit := func(type, value, profile) {
+  value = int(value)
+  if value == undefined {
+    return error("invalid value: got `" + value + "`; must be an integer")
+  }
+  type = text.to_lower(type)
+  if type == "shooting" {
+    // todo: must be >= 2 ; if degrading beyond 6, =0; if improving from 0, =6
+    profile["missile"]["to_hit"] += value
+  } else if type == "attacking" {
+    // todo: must be >= 2 ; if degrading beyond 6, =0; if improving from 0, =6
+    profile["melee"]["to_hit_attacking"] += value
+  } else if type == "defending" {
+    // todo: must be >= 2 ; if degrading beyond 6, =0; if improving from 0, =6
+    profile["melee"]["to_hit_defending"] += value
+  } else {
+    return error("invalid type: `" + type + "`; must be one of [`shooting`, `attacking`, `defending`")
+  }
+}
+
+// Raises the chances a group will hit for a given type of to-hit roll.
+// Parameters:
+// - type (`string`): the to-hit value to modify. Must be one of: shooting, attacking, defending. Case insensitive.
+// - value (`int`):  the amount to improve the to-hit value by.
+// - profile (`map`): the group profile to modify.
+improve_to_hit := func(type, value, profile) {
+  if is_int(value) {
+    // because lower hit values are better, make value negative
+    value = 0 - value
+    return update_to_hit(type, value, profile)
+  }
+}
+
+// Lowers the chances a group will hit for a given type of to-hit roll.
+// Parameters:
+// - type (`string`): the to-hit value to modify. Must be one of: shooting, attacking, defending. Case insensitive.
+// - value (`int`):  the amount to improve the to-hit value by.
+// - profile (`map`): the group profile to modify.
+degrade_to_hit := func(type, value, profile) {
+  return update_to_hit(type, value, profile)
+}
+
+// Modifies the activation value for a group. Private.
+// Parameters:
+// - order (`string`): the activation value to modify. Must be one of: attack, move, shoot. Case insensitive.
+// - value (`int`):  the amount to improve/degrade the activation value by.
+// - profile (`map`): the group profile to modify.
+update_activation := func(order, value, profile) {
+  value = int(value)
+  if value == undefined {
+    return error("invalid value: got `" + value + "`; must be an integer")
+  }
+  order = text.to_lower(order)
+  if order == "shoot" {
+    // todo: must be >= 2 && <= 12
+    profile["missile"]["activation"] += value
+  } else if order == "attack" {
+    // todo: must be >= 2 && <= 12
+    profile["melee"]["activation"] += value
+  } else if order == "move" {
+    // todo: must be >= 2 && <= 12
+    profile["move"]["activation"] += value
+  } else {
+    return error("invalid order: `" + order + "`; must be one of: [`attack`, `move`, `shoot`]")
+  }
+}
+
+// Raises the chances a group will activate for a given order. Private.
+// Parameters:
+// - order (`string`): the activation value to modify. Must be one of: missile, melee, move. Case insensitive.
+// - value (`int`):  the amount to improve the activation value by.
+// - profile (`map`): the group profile to modify.
+improve_activation := func(order, value, profile) {
+  if is_int(value) {
+    // because lower activation values are better, make value negative
+    value = 0 - value
+    return update_activation(order, value, profile)
+  }
+}
+
+// Lowers the chances a group will activate for a given order.
+// Parameters:
+// - order (`string`): the activation value to modify. Must be one of: missile, melee, move. Case insensitive.
+// - value (`int`):  the amount to improve/degrade the activation value by.
+// - profile (`map`): the group profile to modify.
+degrade_activation := func(order, value, profile) {
+  return update_activation(order, value, profile)
+}
+
+// Returns true if the group's base profile currently has the specified trait. Case insensitive.
+// Parameters:
+// - traitName (`string`): the trait to check for.
+// - profile (`map`): the base profile to check.
+has_trait := func(traitName, profile) {
+  for trait in profile["traits"] {
+    if text.to_lower(trait) == text.to_lower(traitName) {
+      return true
+    }
+  }
+  return false
+}
+
+
+// Returns true if the group's base profile can take a particular action.
+// Parameters:
+// - action (`string`): the action to check for
+// - profile (`map`): the group profile to check against
+can := func(action, base_profile) {
+  action = text.to_lower(action)
+  if action == "attack" {
+    return bool(base_profile["melee"]["to_hit_attacking"])
+  } else if action == "shoot" {
+    return bool(base_profile["missile"]["to_hit"])
+  }
+}
+
+// GroupProfile provides numerous helper functions for checking the status of a group's profile and modifying it.
+export {
+  Base: {
+    Can: {
+      // Returns true if the group's base profile has a to-hit value for attacking.
+      // Parameters:
+      // - profile (`map`): the group profile to check
+      Attack: func(base_profile) {
+        return can("attack", base_profile)
+      },
+      // Returns true if the group's base profile has a to-hit value for shooting.
+      // Parameters:
+      // - profile (`map`): the group profile to check
+      Shoot: func(base_profile) {
+        return can("shoot", base_profile)
+      }
+    },
+    Cant: {
+      // Returns true if the group's base profile has a to-hit value for attacking.
+      // Parameters:
+      // - profile (`map`): the group profile to check
+      Attack: func(base_profile) {
+        return !can("attack", base_profile)
+      },
+      // Returns true if the group's base profile has a to-hit value for shooting.
+      // Parameters:
+      // - profile (`map`): the group profile to check
+      Shoot: func(base_profile) {
+        return !can("shoot", base_profile)
+      }
+    },
+    Name: {
+      // Returns true if the group's base profile name matches the given pattern, else false.
+      // Parameters:
+      // - pattern (`string`): a valid regex string to search for
+      // - group (`map`): the group to check
+      Match: func(text, profile) {
+        if text.re_match(text, profile["profile_name"]) {
+          return true
+        }
+        return false
+      },
+      // Returns true if the group's base profile name does not match the given pattern, else false.
+      // Parameters:
+      // - pattern (`string`): a valid regex string to search for
+      // - group (`map`): the group to check
+      NotMatch: func(text, profile) {
+        if text.re_match(text, profile["profile_name"]) {
+          return false
+        }
+        return true
+      }
+    }
+  },
+  Melee: {
+    Activation: {
+      // Lowers the chances a group will activate to attack.
+      // Parameters:
+      // - value (`int`):  the amount to improve the activation value by.
+      // - profile (`map`): the group profile to modify.
+      Degrade: func(value, profile) {
+        return degrade_activation("attack", value, profile)
+      },
+      // Raises the chances a group will activate to attack.
+      // Parameters:
+      // - value (`int`):  the amount to improve the activation value by.
+      // - profile (`map`): the group profile to modify.
+      Improve: func(value, profile) {
+        return improve_activation("attack", value, profile)
+      }
+    },
+    ToHit: {
+      Attacking: {
+        // Lowers the chances a group will hit when attacking.
+        // Parameters:
+        // - value (`int`):  the amount to improve the to-hit value by.
+        // - profile (`map`): the group profile to modify.
+        Degrade: func(value, profile) {
+          return degrade_to_hit("attacking", value, profile)
+        },
+        // Raises the chances a group will hit when attacking.
+        // Parameters:
+        // - value (`int`):  the amount to improve the to-hit value by.
+        // - profile (`map`): the group profile to modify.
+        Improve: func(value, profile) {
+          return improve_to_hit("attacking", value, profile)
+        }
+      },
+      Defending: {
+        // Lowers the chances a group will hit when defending.
+        // Parameters:
+        // - value (`int`):  the amount to improve the to-hit value by.
+        // - profile (`map`): the group profile to modify.
+        Degrade: func(value, profile) {
+          return degrade_to_hit("defending", value, profile)
+        },
+        // Raises the chances a group will hit when defending.
+        // Parameters:
+        // - value (`int`):  the amount to improve the to-hit value by.
+        // - profile (`map`): the group profile to modify.
+        Improve: func(value, profile) {
+          return improve_to_hit("defending", value, profile)
+        }
+      }
+    }
+  },
+  Missile: {
+    Activation: {
+      // Lowers the chances a group will activate to shoot.
+      // Parameters:
+      // - value (`int`):  the amount to improve the activation value by.
+      // - profile (`map`): the group profile to modify.
+      Degrade: func(value, profile) {
+        return degrade_activation("shoot", value, profile)
+      },
+      // Raises the chances a group will activate to shoot.
+      // Parameters:
+      // - value (`int`):  the amount to improve the activation value by.
+      // - profile (`map`): the group profile to modify.
+      Improve: func(value, profile) {
+        return improve_activation("shoot", value, profile)
+      }
+    },
+    Range: {
+      // Reduces how far a group can shoot.
+      // Parameters:
+      // - value (`int`):  the amount to lower the missile range profile value by.
+      // - profile (`map`): the group profile to modify.
+      Degrade: func(value, profile) {
+        if is_int(value) {
+          //todo: can't be less than 1
+          profile["missile"]["range"] -= value
+        } else {
+          return error("invalid value " + value + "; must be an integer")
+        }
+      },
+      // Increases how far a group can shoot.
+      // Parameters:
+      // - value (`int`):  the amount to raise the missile range profile value by.
+      // - profile (`map`): the group profile to modify.
+      Improve: func(value, profile) {
+        if is_int(value) {
+          profile["missile"]["range"] += value
+        } else {
+          return error("invalid value " + value + "; must be an integer")
+        }
+      },
+      MultiplyBy: func(multiplier, group) {
+        group["missile"]["range"] = int(group["missile"]["range"] * multiplier)
+      }
+    },
+    ToHit: {
+      // Lowers the chances a group will hit when shooting.
+      // Parameters:
+      // - value (`int`):  the amount to improve the to-hit value by.
+      // - profile (`map`): the group profile to modify.
+      Degrade: func(value, profile) {
+        return degrade_to_hit("shooting", value, profile)
+      },
+      // Raises the chances a group will hit when shooting.
+      // Parameters:
+      // - value (`int`):  the amount to improve the to-hit value by.
+      // - profile (`map`): the group profile to modify.
+      Improve: func(value, profile) {
+        return improve_to_hit("shooting", value, profile)
+      }
+    },
+    AddProfile: func(activation, toHit, range, group) {
+      group["missile"] = {}
+      group["missile"]["activation"] = activation
+      group["missile"]["to_hit"] = toHit
+      group["missile"]["range"] = range
+    },
+    RemoveProfile: func(group) {
+      group["missile"]["activation"] = 0
+      group["missile"]["to_hit"] = 0
+      group["missile"]["range"] = 0
+    }
+  },
+  Move: {
+    Activation: {
+      // Lowers the chances a group will activate to move.
+      // Parameters:
+      // - value (`int`):  the amount to improve the activation value by.
+      // - profile (`map`): the group profile to modify.
+      Degrade: func(value, profile) {
+        return degrade_activation("move", value, profile)
+      },
+      // Raises the chances a group will activate to move.
+      // Parameters:
+      // - value (`int`):  the amount to improve the activation value by.
+      // - profile (`map`): the group profile to modify.
+      Improve: func(value, profile) {
+        return improve_activation("move", value, profile)
+      }
+    },
+    Distance: {
+      // Reduces how far a group can move.
+      // Parameters:
+      // - value (`int`):  the amount to lower the move distance profile value by.
+      // - profile (`map`): the group profile to modify.
+      Degrade:func(value, profile) {
+        if is_int(value) {
+          //todo: can't be less than 1
+          profile["move"]["distance"] -= value
+        } else {
+          return error("invalid value " + value + "; must be an integer")
+        }
+      },
+      // Increases how far a group can move.
+      // Parameters:
+      // - value (`int`):  the amount to raise the move distance profile value by.
+      // - profile (`map`): the group profile to modify.
+      Improve:func(value, profile) {
+        if is_int(value) {
+          profile["move"]["distance"] += value
+        } else {
+          return error("invalid value " + value + "; must be an integer")
+        }
+      }
+    }
+  },
+  Resolve: {
+    // Lowers the chances a group will pass when testing resolve.
+    // Parameters:
+    // - value (`int`):  the amount to raise the minimum roll to pass a resolve test by.
+    // - profile (`map`): the group profile to modify.
+    Degrade: func(value, profile) {
+      if is_int(value) {
+        // todo: can't be more than 12
+        profile["resolve"] += value
+      } else {
+        return error("invalid value " + value + "; must be an integer")
+      }
+    },
+    // Raises the chances a group will pass when testing resolve.
+    // Parameters:
+    // - value (`int`):  the amount to lower the minimum roll to pass a resolve test by.
+    // - profile (`map`): the group profile to modify.
+    Improve: func(value, profile) {
+      if is_int(value) {
+        //todo: can't be less than 2
+        profile["resolve"] -= value
+      } else {
+        return error("invalid value " + value + "; must be an integer")
+      }
+    }
+  },
+  Toughness: {
+    // Lowers the number of hits a group needs to take to lose fighting strength.
+    // Parameters:
+    // - value (`int`):  the amount to decrease toughness by.
+    // - profile (`map`): the group profile to modify.
+    Degrade: func(value, profile) {
+      if is_int(value) {
+        // todo: can't be less than 1
+        profile["toughness"] -= value
+      } else {
+        return error("invalid value " + value + "; must be an integer")
+      }
+    },
+    // Raises the number of hits a group needs to take to lose fighting strength.
+    // Parameters:
+    // - value (`int`):  the amount to increase toughness by.
+    // - profile (`map`): the group profile to modify.
+    Improve: func(value, profile) {
+      if is_int(value) {
+        profile["toughness"] += value
+      } else {
+        return error("invalid value " + value + "; must be an integer")
+      }
+    }
+  },
+  Trait: {
+    // Returns true if the group has the specified trait. Case insensitive.
+    // Parameters:
+    // - traitName (`string`): the trait to check for.
+    // - profile (`map`): the base profile to check.
+    Has: func(traitName, profile) {
+      return has_trait(traitName, profile)
+    },
+    // Returns true if the group currently does not have the specified trait. Case insensitive.
+    // Parameters:
+    // - traitName (`string`): the trait to check for.
+    // - profile (`map`): the base profile to check.
+    NotHas: func(traitName, profile) {
+      return !has_trait(traitName, profile)
+    },
+    // Adds a specified trait to a specified group. Returns true if the trait was added, otherwise false.
+    // Parameters:
+    // - traitName (`string`): the trait to add.
+    // - profile (`map`): the base profile to modify.
+    Add: func(traitName, profile) {
+      if !has_trait(traitName, profile) {
+        profile["traits"] + [traitName]
+        return true
+      }
+      return false
+    },
+    // Removes a specified trait to a specified group. Returns true if the trait was removed, otherwise false.
+    // Parameters:
+    // - traitName (`string`): the trait to remove.
+    // - profile (`map`): the base profile to modify.
+    Remove: func(traitName, profile) {
+      if has_trait(traitName, profile) {
+        updatedTraitList := enum.filter(profile["traits"], func(_, name) {
+          return name != traitName
+        })
+        profile["traits"] = []
+        profile["traits"] = updatedTraitList
+        return true
+      }
+      return false
+    }
+  }
+}

@@ -1,66 +1,198 @@
 entries:
-  - Roll:   3
-    Name: Reprehensible
-    Effect: |
+  - roll: 3
+    name: Reprehensible
+    effect: |
       After deployment, whether or not the Captain is on the table, roll 1d6 for every Group except the Captain's.
       On a 1, they desert—remove that Group from play.
-  - Roll:   4
-    Name: Vapid
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - EndOfDeployment
+          applies_to: followers
+          then:
+            - Desert()
+  - roll: 4
+    name: Vapid
+    effect: |
       The Captain does not grant a bonus for Groups testing Resolve.
-  - Roll:   5
-    Name: Blood-shy
-    Effect: |
+    scripting:
+      on_add:
+        - addOverride("CaptainResolveBonus", 0)
+      on_remove:
+        - removeOverride("CaptainResolveBonus")
+  - roll: 5
+    name: Blood-shy
+    effect: |
       The Captain's Group may not be ordered to Attack.
-  - Roll:   6
-    Name: Feeble
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - GetValidActivations
+          then:
+            - ignoreActivation("Attack")
+  - roll: 6
+    name: Feeble
+    effect: |
       The Captain's Group rolls one fewer die when Attacking or Shooting.
-  - Roll:   7
-    Name: Wicked
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - ResolvingAttack
+            - ResolvingShoot
+          then:
+            - degradeDieCount("ToHit", 1)
+  - roll: 7
+    name: Wicked
+    effect: |
       When any Group within 12" of the Captain's Group fails to Rally, they may lose 1 FS to pass instead.
-  - Roll:   8
-    Name: Shrewd
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - RallyResultFailure
+          applies_to: followers
+          when:
+            - within(12, "Captain")
+          then:
+            - prompt("WickedCaptain")
+  - roll: 8
+    name: Shrewd
+    effect: |
       You may add or subtract 1 from your roll when determining attacker and defender at the start of the game.
-  - Roll:   9
-    Name: Resolute
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - ProccessingInitiativeResult
+          then:
+            - prompt("ShrewdCaptain")
+  - roll: 9
+    name: Resolute
+    effect: |
       The Captain and Captain's Group are unaffected by fear effects.
-  - Roll:   10
-    Name: Capable
-    Effect: |
+    scripting:
+      on_add:
+        - addIgnoreEffectTag("Fear")
+      on_remove:
+        - removeIgnoreEffectTag("Fear")
+  - roll: 10
+    name: Capable
+    effect: |
       Once each turn, the Captain's Group may reroll one die when rolling to hit.
-  - Roll:   11
-    Name: Compelling
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - CalculatingToHit
+          uses:
+            per_turn: 1
+          then:
+            - prompt("CapableCaptain")
+  - roll: 11
+    name: Compelling
+    effect: |
       Once each turn, one Group within 12" of the Captain may reroll a failed activation test.
-  - Roll:   12
-    Name: Prodding
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - FailedToActivate
+          applies_to: followers
+          uses:
+            global_per_turn: 1
+          when:
+            - within(12, "Captain")
+          then:
+            - prompt("CompellingCaptain")
+  - roll: 12
+    name: Prodding
+    effect: |
       Once each turn, one Group within 12" of the Captain may automatically pass a Move activation test.
-  - Roll:   13
-    Name: Aggressive
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - TestingToActivateMove
+          applies_to: followers
+          uses:
+            global_per_turn: 1
+          when:
+            - within(12, "Captain")
+          then:
+            - prompt("ProddingCaptain")
+  - roll: 13
+    name: Aggressive
+    effect: |
       Once each turn, one Group within 12" of the Captain may automatically pass an Attack activation test.
-  - Roll:   14
-    Name: Projectile
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - TestingToActivateAttack
+          applies_to: followers
+          uses:
+            global_per_turn: 1
+          when:
+            - within(12, "Captain")
+          then:
+            - prompt("AggressiveCaptain")
+  - roll: 14
+    name: Projectile
+    effect: |
       Once each turn, one Group within 12" of the Captain may automatically pass a Shooting activation test.
-  - Roll:   15
-    Name: Dangerous
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - TestingToActivateShoot
+          applies_to: followers
+          uses:
+            global_per_turn: 1
+          when:
+            - within(12, "Captain")
+          then:
+            - prompt("ProjectileCaptain")
+  - roll: 15
+    name: Dangerous
+    effect: |
       Once each turn, the Captain's Group may reroll two dice when rolling to hit.
-  - Roll:   16
-    Name: Calming
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - CalculatingToHit
+          uses:
+            per_turn: 1
+          then:
+            - prompt("DangerousCaptain")
+  - roll: 16
+    name: Calming
+    effect: |
       Once each turn, one Group within 12" of the Captain may ignore a compulsory activation as the result of the Reckless trait.
-  - Roll:   17
-    Name: Abjured
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - GetValidActivations
+          uses:
+            global_per_turn: 1
+          applies_to: followers
+          when:
+            - within(12, "Captain")
+            - hasTrait("Reckless")
+          then:
+            - prompt("CalmingCaptain")
+  - roll: 17
+    name: Abjured
+    effect: |
       The Captain's Group cannot be targeted by enemies' spells.
-  - Roll:   18
-    Name: Incredible
-    Effect: |
+    scripting:
+      in_play:
+        - register_for:
+            - GetValidActivations
+          applies_to: enemies
+          then:
+            - ignoreForTargetList("Casting", {{guid}})
+  - roll: 18
+    name: Incredible
+    effect: |
       Once each turn, the Captain's Group may reroll three dice when rolling to hit.
+    scripting:
+      in_play:
+        - register_for:
+            - CalculatingToHit
+          uses:
+            per_turn: 1
+          then:
+            - prompt("DangerousCaptain")

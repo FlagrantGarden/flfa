@@ -1,0 +1,5 @@
+// The core library exports the following submodules:
+// - Group
+export {
+  Group: import("Group")
+}

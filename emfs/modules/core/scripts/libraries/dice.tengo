@@ -1,0 +1,77 @@
+enum := import("enum")
+rand := import("rand")
+time := import("times")
+seed := time.time_unix_nano(time.now())
+rand.seed(seed)
+
+// Rolls a die of specified size. If size cannot be converted to an integer, returns undefined.
+//
+// To roll a six-sided die and return a number between 1 and 6 (inclusive):
+//     d(6)
+// To roll a twenty-sided die and return a number betwenn 1 and 20 (inclusive):
+//     d(20)
+d := func(size) {
+  size = int(size)
+  if size == undefined {
+    return undefined
+  }
+  return rand.intn(6) + 1
+}
+
+// Rolls count dice of specified size, returning an array of results.
+// If count or size cannot be converted to an integer, returns an error.
+
+// To roll four six sided dice:
+//     roll(4, 6)
+// To roll a two twenty-sided die:
+//     roll(2, 20)
+roll := func(count, size) {
+  rolls := []
+
+  count = int(count)
+  if count == undefined {
+    return error("count must be an integer or convertible to an integer")
+  }
+
+  size = int(size)
+  if size == undefined {
+    return error("count must be an integer or convertible to an integer")
+  }
+
+  for n:= 0 ; n < count ; n++ {
+    rolls = rolls + [d(size)]
+  }
+
+  return rolls
+}
+
+// Adds an array of rolls to get the total
+sum := func(rolls) {
+  total := 0
+  enum.each(rolls, func(_, roll) { total += roll })
+  return total
+}
+
+
+// roll 2d6 vs a target number, returning true if the roll is greater than or equal to the target
+testVs := func(target) {
+  return sum(roll(2, 6)) >= target
+}
+
+// return the number of rolls greater than or equal to a target number
+countHits := func(rolls, target) {
+  hits := 0
+  enum.each(rolls, func(_, roll) {
+    if roll >= target { hits++ }
+  })
+  return hits
+}
+
+// Dice library export
+export {
+  d: d,
+  roll: roll,
+  sum: sum,
+  testVs: testVs,
+  countHits: countHits
+}
