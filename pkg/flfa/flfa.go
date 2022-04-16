@@ -5,12 +5,10 @@ import (
 	"path/filepath"
 
 	"github.com/FlagrantGarden/flfa/pkg/flfa/data"
-	"github.com/FlagrantGarden/flfa/pkg/flfa/scripting"
 	"github.com/FlagrantGarden/flfa/pkg/flfa/state/skirmish"
 	"github.com/FlagrantGarden/flfa/pkg/flfa/state/user"
 	"github.com/FlagrantGarden/flfa/pkg/tympan"
-	"github.com/FlagrantGarden/flfa/pkg/tympan/module"
-	tympan_scripting "github.com/FlagrantGarden/flfa/pkg/tympan/module/scripting"
+	"github.com/FlagrantGarden/flfa/pkg/tympan/module/scripting"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/state"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/state/instance"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/state/persona"
@@ -20,7 +18,7 @@ type Api struct {
 	Tympan       *tympan.Tympan[*Configuration]
 	EMFS         *embed.FS
 	Cache        DataCache
-	ScriptEngine *tympan_scripting.Engine
+	ScriptEngine *scripting.Engine
 }
 
 type DataCache struct {
@@ -29,8 +27,8 @@ type DataCache struct {
 	Spells          []data.Spell
 	Companies       []data.Company
 	Personas        []*persona.Persona[user.Data, user.Settings]
-	ScriptModules   []tympan_scripting.Module
-	ScriptLibraries []tympan_scripting.Library
+	ScriptModules   []scripting.Module
+	ScriptLibraries []scripting.Library
 }
 
 type Configuration struct {
@@ -44,7 +42,13 @@ func (config *Configuration) Initialize() error {
 
 func (ffapi *Api) InitializeEngine() {
 	if ffapi.ScriptEngine == nil {
-		ffapi.ScriptEngine = scripting.NewEngine(ffapi.Cache.ScriptModules, ffapi.Cache.ScriptLibraries)
+		ffapi.ScriptEngine = scripting.NewEngine()
+		// ignore errors for now
+		ffapi.ScriptEngine.SetStandardLibraries(ffapi.ScriptEngine.AllowedStandardLibraries())
+		ffapi.ScriptEngine.AddApplicationLibraries(ffapi.Cache.ScriptLibraries...)
+		for _, module := range ffapi.Cache.ScriptModules {
+			ffapi.ScriptEngine.AddApplicationModule(module)
+		}
 	}
 }
 
