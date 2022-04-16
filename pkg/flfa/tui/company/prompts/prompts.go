@@ -62,7 +62,8 @@ func SelectOption(canRemoveAGroup bool, hasCaptain bool) *selection.Selection {
 		"Save & Continue",
 		"Change Name",
 		"Change Description",
-		"Add a new Group",
+		"Create & add a new Group",
+		"Add a copy of a Group",
 		"Edit a Group",
 	}
 
@@ -91,6 +92,7 @@ type SelectGroupFor int
 
 const (
 	Editing SelectGroupFor = iota
+	Copying
 	Promoting
 	Removing
 )
@@ -121,6 +123,8 @@ func SelectGroup(action SelectGroupFor, groups []data.Group) (prompt *selection.
 
 	var message strings.Builder
 	switch action {
+	case Copying:
+		message.WriteString("Which Group would you like to make a copy of?\n")
 	case Editing:
 		message.WriteString("Which Group would you like to edit?\n")
 	case Promoting:
@@ -239,10 +243,6 @@ func SelectRerollCaptainTrait(group data.Group, availableTraits []data.Trait) *s
 			messageStyle.Render(fmt.Sprintf("» %s", info.Message)),
 			effectStyle.Render(info.Trait.Effect),
 		)
-		// return lipgloss.NewStyle().
-		// 	Bold(true).
-		// 	Foreground(lipgloss.Color("32")).
-		// 	Render(fmt.Sprintf("» %s", choice.Value.(CaptainTraitChoice).Message))
 	}
 
 	unselectedChoiceStyle := func(choice *selection.Choice) string {
@@ -252,7 +252,6 @@ func SelectRerollCaptainTrait(group data.Group, availableTraits []data.Trait) *s
 			lipgloss.NewStyle().Width(maxWidth).PaddingRight(2).Render(fmt.Sprintf("  %s", info.Message)),
 			lipgloss.NewStyle().Width(120-2-maxWidth).Faint(true).Render(info.Trait.Effect),
 		)
-		// return fmt.Sprintf("  %s", choice.Value.(CaptainTraitChoice).Message)
 	}
 
 	return selector.NewStructSelector(

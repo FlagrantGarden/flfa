@@ -19,6 +19,7 @@ const (
 	SelectingGroupToEdit
 	SelectingGroupToPromote
 	EditingGroup
+	CopyingGroup
 	RemovingGroup
 	SelectingCaptainOption
 	RerollingCaptainTrait
@@ -52,6 +53,9 @@ func (state SubstateEditing) Start(model *Model) (cmd tea.Cmd) {
 		cmd = model.Selection.Init()
 	case EditingGroup:
 		// ??
+	case CopyingGroup:
+		model.Selection = prompts.SelectGroupModel(prompts.Copying, model.Groups)
+		cmd = model.Selection.Init()
 	case RemovingGroup:
 		model.Selection = prompts.SelectGroupModel(prompts.Removing, model.Groups)
 		cmd = model.Selection.Init()
@@ -114,7 +118,7 @@ func (state SubstateEditing) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 		return model.UpdateName(SelectingOption)
 	case Redescribing:
 		return model.UpdateDescription(SelectingOption)
-	case SelectingGroupToEdit, SelectingGroupToPromote, RemovingGroup, SelectingCaptainReplacement:
+	case SelectingGroupToEdit, SelectingGroupToPromote, RemovingGroup, SelectingCaptainReplacement, CopyingGroup:
 		return model.UpdateGroupSelection()
 	case SelectingCaptainOption:
 		return model.UpdateCaptainSelection()
@@ -156,7 +160,7 @@ func (state SubstateEditing) UpdateOnFallThrough(model *Model, msg tea.Msg) (cmd
 	switch model.Substate.Editing {
 	case ConfirmingCaptainDemotion, ConfirmingCaptainReplacement:
 		_, cmd = model.Confirmation.Update(msg)
-	case SelectingOption, SelectingCaptainOption, RemovingGroup,
+	case SelectingOption, SelectingCaptainOption, RemovingGroup, CopyingGroup,
 		SelectingGroupToEdit, SelectingGroupToPromote, SelectingCaptainTrait,
 		RerollingCaptainTrait, SelectingCaptainReplacement:
 		_, cmd = model.Selection.Update(msg)
