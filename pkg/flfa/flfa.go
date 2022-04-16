@@ -49,57 +49,12 @@ func (ffapi *Api) InitializeEngine() {
 }
 
 func (ffapi *Api) CacheModuleData(modulePath string, embedded bool) {
-	// load profiles
-	var profiles []data.Profile
-	if embedded {
-		profiles, _ = module.GetEmbeddedDataByFile[data.Profile](modulePath, "Profiles", ffapi.EMFS)
-	} else {
-		profiles, _ = module.GetDataByFile[data.Profile](modulePath, "Profiles", ffapi.Tympan.AFS)
-	}
-	ffapi.Cache.Profiles = append(ffapi.Cache.Profiles, profiles...)
-	// load traits
-	var traits []data.Trait
-	if embedded {
-		traits, _ = module.GetEmbeddedDataByFolder[data.Trait](modulePath, "Traits", ffapi.EMFS)
-	} else {
-		traits, _ = module.GetDataByFolder[data.Trait](modulePath, "Traits", ffapi.Tympan.AFS)
-	}
-	ffapi.Cache.Traits = append(ffapi.Cache.Traits, traits...)
-	// load spells
-	var spells []data.Spell
-	if embedded {
-		spells, _ = module.GetEmbeddedDataByFile[data.Spell](modulePath, "Spells", ffapi.EMFS)
-	} else {
-		spells, _ = module.GetDataByFile[data.Spell](modulePath, "Spells", ffapi.Tympan.AFS)
-	}
-	ffapi.Cache.Spells = append(ffapi.Cache.Spells, spells...)
-	// load companies
-	var companies []data.Company
-	if embedded {
-		companies, _ = module.GetEmbeddedDataByFile[data.Company](modulePath, "Companies", ffapi.EMFS)
-	} else {
-		companies, _ = module.GetDataByFile[data.Company](modulePath, "Companies", ffapi.Tympan.AFS)
-	}
-	for _, company := range companies {
-		company.Initialize(profiles, traits)
-		ffapi.Cache.Companies = append(ffapi.Cache.Companies, company)
-	}
-	// load script libraries
-	var scriptLibraries []tympan_scripting.Library
-	if embedded {
-		scriptLibraries, _ = tympan_scripting.GetEmbeddedStandaloneLibraries(modulePath, ffapi.EMFS)
-	} else {
-		scriptLibraries, _ = tympan_scripting.GetStandaloneLibraries(modulePath, ffapi.Tympan.AFS)
-	}
-	ffapi.Cache.ScriptLibraries = append(ffapi.Cache.ScriptLibraries, scriptLibraries...)
-	// load script modules
-	var scriptModule tympan_scripting.Module
-	if embedded {
-		scriptModule, _ = tympan_scripting.GetEmbeddedModule(modulePath, ffapi.EMFS)
-	} else {
-		scriptModule, _ = tympan_scripting.GetModule(modulePath, ffapi.Tympan.AFS)
-	}
-	ffapi.Cache.ScriptModules = append(ffapi.Cache.ScriptModules, scriptModule)
+	ffapi.CacheProfiles(modulePath, embedded)
+	ffapi.CacheTraits(modulePath, embedded)
+	ffapi.CacheSpells(modulePath, embedded)
+	ffapi.CacheCompanies(modulePath, embedded)
+	ffapi.CacheScriptLibraries(modulePath, embedded)
+	ffapi.CacheScriptModules(modulePath, embedded)
 }
 
 func (ffapi *Api) InstalledModules() (installedModules []string, err error) {
