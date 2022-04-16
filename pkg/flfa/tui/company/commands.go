@@ -126,10 +126,12 @@ func (model *Model) UpdateEditingChoice() (cmd tea.Cmd) {
 		cmd = model.SetAndStartSubstate(Redescribing)
 	case "Change Name":
 		cmd = model.SetAndStartSubstate(Renaming)
-	case "Add a new Group":
+	case "Create & add a new Group":
 		cmd = model.SetAndStartSubstate(AddingGroup)
 	case "Edit a Group":
 		cmd = model.SetAndStartSubstate(SelectingGroupToEdit)
+	case "Add a copy of a Group":
+		cmd = model.SetAndStartSubstate(CopyingGroup)
 	case "Remove a Group":
 		cmd = model.SetAndStartSubstate(RemovingGroup)
 	case "Update Captaincy":
@@ -163,6 +165,9 @@ func (model *Model) UpdateGroupSelection() (cmd tea.Cmd) {
 		cmd = model.Group.Init()
 	case SelectingGroupToPromote:
 		model.Groups[choice.Index].PromoteToCaptain(nil, data.FilterTraitsBySource("core", model.Api.Cache.Traits)...)
+		cmd = model.SetAndStartSubstate(SelectingOption)
+	case CopyingGroup:
+		model.Groups = append(model.Groups, selectedGroup)
 		cmd = model.SetAndStartSubstate(SelectingOption)
 	case RemovingGroup:
 		model.Groups = utils.RemoveIndex(model.Groups, choice.Index)
