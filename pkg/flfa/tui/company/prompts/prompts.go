@@ -17,27 +17,35 @@ import (
 	"github.com/erikgeiser/promptkit/textinput"
 )
 
-func ChooseCompany(companies []data.Company) *selection.Selection {
+func ChooseCompany(creating bool, companies []data.Company) *selection.Selection {
 	var companyNames []string
-	companyNames = append(companyNames, "Create a new company")
+	var message string
+
+	if creating {
+		companyNames = append(companyNames, "Create a new company")
+		message = "Select an existing company to start from or create your own:"
+	} else {
+		message = "Select a company to edit:"
+	}
+
 	for _, company := range companies {
 		companyNames = append(companyNames, company.Name)
 	}
 
 	return selector.NewStringSelector(
-		"Which company would you like to play as?",
+		message,
 		companyNames,
 		selector.WithPageSize(5),
 	)
 }
 
-func ChooseCompanyModel(companies []data.Company) *selection.Model {
-	return selection.NewModel(ChooseCompany(companies))
+func ChooseCompanyModel(creating bool, companies []data.Company) *selection.Model {
+	return selection.NewModel(ChooseCompany(creating, companies))
 }
 
 func GetName() *textinput.TextInput {
 	return texter.New(
-		"What is your company called?",
+		"What is this company called?",
 		texter.WithPlaceholder("Name cannot be empty"),
 	)
 }
@@ -48,7 +56,7 @@ func GetNameModel() *textinput.Model {
 
 func GetDescription() *textinput.TextInput {
 	return texter.New(
-		"How would you describe your company?",
+		"How would you describe this company?",
 		texter.WithPlaceholder("Description cannot be empty"),
 	)
 }

@@ -14,7 +14,7 @@ const (
 func (state SubstateChoosing) Start(model *Model) (cmd tea.Cmd) {
 	switch model.Substate.Choosing {
 	case SelectingCompany:
-		model.Selection = prompts.ChooseCompanyModel(model.Api.Cache.Companies)
+		model.Selection = prompts.ChooseCompanyModel(true, model.AvailableCompanies)
 		cmd = model.Selection.Init()
 	}
 

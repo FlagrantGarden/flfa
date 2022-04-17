@@ -33,11 +33,15 @@ type Substate struct {
 func (model *Model) SetAndStartState(state compositor.State) (cmd tea.Cmd) {
 	switch state {
 	case StateChoosingPersona:
-		model.SetAndStartSubstate(SelectingPersona)
+		cmd = model.SetAndStartSubstate(SelectingPersona)
 	case StateCreatingPersona:
-		model.SetAndStartSubstate(Naming)
+		cmd = model.SetAndStartSubstate(Naming)
 	case StateEditingPersona:
-		model.SetAndStartSubstate(SelectingEditingOption)
+		cmd = model.SetAndStartSubstate(SelectingEditingOption)
+	case compositor.StateDone:
+		cmd = model.Done
+	case compositor.StateCancelled:
+		cmd = model.Cancelled
 	case compositor.StateReady:
 		model.State = compositor.StateReady
 		cmd = nil
@@ -77,6 +81,12 @@ func NewModel(api *flfa.Api, options ...compositor.Option[*Model]) *Model {
 func WithPlayer(persona *player.Player) compositor.Option[*Model] {
 	return func(model *Model) {
 		model.Player = persona
+	}
+}
+
+func AsSubModel() compositor.Option[*Model] {
+	return func(model *Model) {
+		model.IsSubmodel = true
 	}
 }
 

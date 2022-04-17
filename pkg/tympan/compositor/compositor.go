@@ -138,12 +138,12 @@ type EndMsg struct{}
 // is a shorthand for doing so, saving the error and reporting that the model is broken.
 func (model *Compositor) RecordFatalError(err error) tea.Cmd {
 	model.FatalError = err
-	model.State = StateBroken
 	return model.Broken
 }
 
 // This command should be called when an unhandleable problem occurs in the model
 func (model *Compositor) Broken() tea.Msg {
+	model.State = StateBroken
 	return EndMsg{}
 }
 
@@ -151,14 +151,22 @@ func (model *Compositor) Broken() tea.Msg {
 // as a submodel.
 func (model *Compositor) Cancelled() tea.Msg {
 	model.State = StateCancelled
-	return EndMsg{}
+	if model.IsSubmodel {
+		return EndMsg{}
+	} else {
+		return tea.Quit
+	}
 }
 
 // This command should be called when the user chooses to exit gracefully after completing a compositor-based model when
 // it is being used as a submodel.
 func (model *Compositor) Done() tea.Msg {
 	model.State = StateDone
-	return EndMsg{}
+	if model.IsSubmodel {
+		return EndMsg{}
+	} else {
+		return tea.Quit
+	}
 }
 
 // This method sets the cached width and height of a compositor-based model but does not otherwise change any behavior.

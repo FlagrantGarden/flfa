@@ -27,7 +27,7 @@ func (ffapi *Api) InitializeGameState() error {
 		ffapi.CacheModuleData(filepath.Join(ffapi.Tympan.Configuration.FolderPaths.Application, "modules", module), false)
 	}
 	log.Trace().Msgf("Caching personas from %s", ffapi.Tympan.Configuration.FolderPaths.Cache)
-	ffapi.CacheUserPersonas("")
+	ffapi.CachePlayers("")
 
 	ffapi.InitializeEngine()
 	return nil
