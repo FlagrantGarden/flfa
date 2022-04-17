@@ -27,7 +27,7 @@ func GetNameModel() *textinput.Model {
 	return textinput.NewModel(GetName())
 }
 
-func Choose(personas []player.Player) *selection.Selection {
+func ChoosePlayer(personas []player.Player) *selection.Selection {
 	var messageBuilder strings.Builder
 	messageBuilder.WriteString("It looks like this is your first time playing ")
 	messageBuilder.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("5")).Bold(true).Render("Flagrant Factions"))
@@ -51,8 +51,8 @@ func Choose(personas []player.Player) *selection.Selection {
 	return selector.NewStringSelector(message, choices, selector.WithPageSize(5))
 }
 
-func ChoosePersonaModel(personas []player.Player) *selection.Model {
-	return selection.NewModel(Choose(personas))
+func ChoosePlayerModel(personas []player.Player) *selection.Model {
+	return selection.NewModel(ChoosePlayer(personas))
 }
 
 func SetAsPreferred(name string) *confirmation.Confirmation {

@@ -25,7 +25,7 @@ type DataCache struct {
 	Profiles        []data.Profile
 	Spells          []data.Spell
 	Companies       []data.Company
-	Personas        []player.Player
+	Players         []player.Player
 	ScriptModules   []scripting.Module
 	ScriptLibraries []scripting.Library
 }
@@ -82,17 +82,17 @@ func (ffapi *Api) InstalledModules() (installedModules []string, err error) {
 	return
 }
 
-func (ffapi *Api) CacheUserPersonas(cachePath string) {
+func (ffapi *Api) CachePlayers(cachePath string) {
 	if cachePath == "" {
 		cachePath = ffapi.Tympan.Configuration.FolderPaths.Cache
 	}
 	discoveredPersonas, _ := persona.DiscoverPersonas[player.Data, player.Settings](player.Kind(), cachePath, ffapi.Tympan.AFS)
 	for _, persona := range discoveredPersonas {
-		ffapi.Cache.Personas = append(ffapi.Cache.Personas, player.Player{Persona: persona})
+		ffapi.Cache.Players = append(ffapi.Cache.Players, player.Player{Persona: persona})
 	}
 }
 
-func (ffapi *Api) GetUserPersona(name string, cachePath string) (*persona.Persona[player.Data, player.Settings], error) {
+func (ffapi *Api) GetPlayer(name string, cachePath string) (*persona.Persona[player.Data, player.Settings], error) {
 	if cachePath == "" {
 		cachePath = ffapi.Tympan.Configuration.FolderPaths.Cache
 	}

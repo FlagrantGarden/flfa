@@ -74,14 +74,14 @@ func NewModel(api *flfa.Api, options ...compositor.Option[*Model]) *Model {
 	return model
 }
 
-func WithPersona(persona *player.Player) compositor.Option[*Model] {
+func WithPlayer(persona *player.Player) compositor.Option[*Model] {
 	return func(model *Model) {
 		model.Player = persona
 	}
 }
 
 func (model *Model) Init() tea.Cmd {
-	return model.LoadPersona()
+	return model.LoadPlayer()
 }
 
 func (model *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

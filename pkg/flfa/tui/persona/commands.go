@@ -7,7 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (model *Model) LoadPersona() tea.Cmd {
+func (model *Model) LoadPlayer() tea.Cmd {
 	return func() tea.Msg {
 		var name string
 		// persona not yet set
@@ -23,7 +23,7 @@ func (model *Model) LoadPersona() tea.Cmd {
 			name = model.Name
 		}
 
-		userPersona, err := model.Api.GetUserPersona(name, "")
+		userPersona, err := model.Api.GetPlayer(name, "")
 		if err != nil {
 			return model.RecordFatalError(err)
 		}
@@ -33,7 +33,7 @@ func (model *Model) LoadPersona() tea.Cmd {
 	}
 }
 
-func (model *Model) InitializePersona(name string, nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
+func (model *Model) InitializePlayer(name string, nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
 	return func() tea.Msg {
 		kind := player.Kind()
 		model.Player = &player.Player{
@@ -51,7 +51,7 @@ func (model *Model) InitializePersona(name string, nextSubstate compositor.Subst
 	}
 }
 
-func (model *Model) SavePersona(nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
+func (model *Model) SavePlayer(nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
 	return func() tea.Msg {
 		err := model.Player.Save(model.Api.Tympan.AFS)
 		if err != nil {
@@ -107,7 +107,7 @@ func (model *Model) UpdateSelectingPersona() (cmd tea.Cmd) {
 	if choice.Value.(string) == "Create a new persona" {
 		cmd = model.SetAndStartSubstate(Naming)
 	} else {
-		cmd = model.InitializePersona(choice.Value.(string), SelectingEditingOption)
+		cmd = model.InitializePlayer(choice.Value.(string), SelectingEditingOption)
 	}
 
 	return cmd
@@ -134,5 +134,5 @@ func (model *Model) UpdateName(nextSubstate compositor.SubstateInterface[*Model]
 		return model.RecordFatalError(err)
 	}
 
-	return model.InitializePersona(name, nextSubstate)
+	return model.InitializePlayer(name, nextSubstate)
 }
