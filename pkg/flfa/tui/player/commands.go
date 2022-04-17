@@ -23,32 +23,34 @@ func (model *Model) LoadPlayer() tea.Cmd {
 			name = model.Name
 		}
 
-		userPersona, err := model.Api.GetPlayer(name, "")
+		foundPlayer, err := model.Api.GetPlayer(name, "")
 		if err != nil {
 			return model.RecordFatalError(err)
 		}
 
-		model.Persona = userPersona
+		model.Player = &foundPlayer
 		return model.SetAndStartState(StateEditingPersona)
 	}
 }
 
 func (model *Model) InitializePlayer(name string, nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
-	return func() tea.Msg {
-		kind := player.Kind()
-		model.Player = &player.Player{
-			Persona: &persona.Persona[player.Data, player.Settings]{Kind: *kind},
-		}
-		err := model.Player.Initialize(name,
-			model.Api.Tympan.Configuration.FolderPaths.Cache,
-			model.Api.Tympan.AFS,
-		)
-		if err != nil {
-			return model.RecordFatalError(err)
-		}
-
-		return model.SetAndStartSubstate(nextSubstate)
+	kind := player.Kind()
+	model.Player = &player.Player{
+		Persona: &persona.Persona[player.Data, player.Settings]{Kind: *kind},
 	}
+	err := model.Player.Initialize(name,
+		model.Api.Tympan.Configuration.FolderPaths.Cache,
+		model.Api.Tympan.AFS,
+	)
+	if err != nil {
+		return model.RecordFatalError(err)
+	}
+
+	if model.IsSubmodel {
+		return model.SetAndStartState(compositor.StateDone)
+	}
+
+	return model.SetAndStartSubstate(nextSubstate)
 }
 
 func (model *Model) SavePlayer(nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
