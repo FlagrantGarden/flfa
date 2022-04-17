@@ -51,11 +51,11 @@ func (company Company) Points() (points int) {
 }
 
 func GetCompany(name string, companyList []Company) (Company, error) {
-	log.Trace().Msgf("searching for profile '%s'", name)
+	log.Trace().Msgf("searching for company '%s'", name)
 	for _, company := range companyList {
 		if company.Name == name {
 			return company, nil
 		}
 	}
-	return Company{}, fmt.Errorf("no profile found that matches name '%s'", name)
+	return Company{}, fmt.Errorf("no company found that matches name '%s'", name)
 }
