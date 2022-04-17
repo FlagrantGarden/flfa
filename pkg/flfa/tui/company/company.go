@@ -15,10 +15,11 @@ import (
 type Model struct {
 	tui.SharedModel
 	*data.Company
-	Limits   Limits
-	Indexes  Indexes
-	Substate Substate
-	Group    *group.Model
+	Limits             Limits
+	Indexes            Indexes
+	AvailableCompanies []data.Company
+	Substate           Substate
+	Group              *group.Model
 }
 
 type Limits struct {
@@ -98,6 +99,12 @@ func NewModel(api *flfa.Api, options ...compositor.Option[*Model]) *Model {
 	return model
 }
 
+func WithAvailableCompanies(companies []data.Company) compositor.Option[*Model] {
+	return func(model *Model) {
+		model.AvailableCompanies = companies
+	}
+}
+
 func WithCompany(company *data.Company) compositor.Option[*Model] {
 	return func(model *Model) {
 		model.Company = company
@@ -116,7 +123,16 @@ func WithGroupMaxPoints(max int) compositor.Option[*Model] {
 	}
 }
 
+func AsSubModel() compositor.Option[*Model] {
+	return func(model *Model) {
+		model.IsSubmodel = true
+	}
+}
+
 func (model *Model) Init() tea.Cmd {
+	if len(model.AvailableCompanies) == 0 {
+		model.AvailableCompanies = model.Api.Cache.Companies
+	}
 	if model.Company == nil {
 		model.Company = &data.Company{}
 		return model.SetAndStartSubstate(SelectingCompany)
