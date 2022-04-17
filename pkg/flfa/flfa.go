@@ -11,6 +11,7 @@ import (
 	"github.com/FlagrantGarden/flfa/pkg/tympan/module/scripting"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/state/instance"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/state/persona"
+	"github.com/FlagrantGarden/flfa/pkg/tympan/utils"
 )
 
 type Api struct {
@@ -87,16 +88,31 @@ func (ffapi *Api) CachePlayers(cachePath string) {
 		cachePath = ffapi.Tympan.Configuration.FolderPaths.Cache
 	}
 	discoveredPersonas, _ := persona.DiscoverPersonas[player.Data, player.Settings](player.Kind(), cachePath, ffapi.Tympan.AFS)
+
+	var existingPersonaPaths []string
+	for _, persona := range ffapi.Cache.Players {
+		existingPersonaPaths = append(existingPersonaPaths, persona.Handle.FilePath)
+	}
 	for _, persona := range discoveredPersonas {
-		ffapi.Cache.Players = append(ffapi.Cache.Players, player.Player{Persona: persona})
+		// Replace if it exists, add if not
+		foundIndex := utils.FindIndex(existingPersonaPaths, persona.Handle.FilePath)
+		if foundIndex < 0 {
+			ffapi.Cache.Players = append(ffapi.Cache.Players, player.Player{Persona: persona})
+		} else {
+			ffapi.Cache.Players[foundIndex] = player.Player{Persona: persona}
+		}
 	}
 }
 
-func (ffapi *Api) GetPlayer(name string, cachePath string) (*persona.Persona[player.Data, player.Settings], error) {
+func (ffapi *Api) GetPlayer(name string, cachePath string) (foundPlayer player.Player, err error) {
 	if cachePath == "" {
 		cachePath = ffapi.Tympan.Configuration.FolderPaths.Cache
 	}
-	return persona.GetPersona[player.Data, player.Settings](name, player.Kind(), cachePath, ffapi.Tympan.AFS)
+	foundPersona, err := persona.GetPersona[player.Data, player.Settings](name, player.Kind(), cachePath, ffapi.Tympan.AFS)
+	if err != nil {
+		return
+	}
+	return player.Player{Persona: foundPersona}, nil
 }
 
 func (ffapi *Api) GetActiveSkirmish(activeUserPersona *persona.Persona[player.Data, player.Settings], cachePath string) (*instance.Instance[skirmish.Skirmish], error) {
