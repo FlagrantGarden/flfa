@@ -1,4 +1,4 @@
-package persona
+package player
 
 import (
 	"github.com/FlagrantGarden/flfa/pkg/flfa/state/player"

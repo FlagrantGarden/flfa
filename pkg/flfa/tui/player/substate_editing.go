@@ -1,7 +1,7 @@
-package persona
+package player
 
 import (
-	"github.com/FlagrantGarden/flfa/pkg/flfa/tui/persona/prompts"
+	"github.com/FlagrantGarden/flfa/pkg/flfa/tui/player/prompts"
 	tea "github.com/charmbracelet/bubbletea"
 )
 

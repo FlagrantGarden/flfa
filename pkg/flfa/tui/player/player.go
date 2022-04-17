@@ -1,4 +1,4 @@
-package persona
+package player
 
 import (
 	"fmt"
