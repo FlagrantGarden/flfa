@@ -17,6 +17,20 @@ const DefaultTemplate = `
 {{- end -}}
 `
 
+// This template is the same as the default template except that the colors for yes and no are inverted; orange for yes
+// and blue for no. Useful when you want to highlight that _confirming_ is the dangerous option.
+const InvertedColorTemplate = `
+{{- Bold .Prompt }}
+
+{{ if .YesSelected -}}
+	{{- print "\t" (Foreground "166" (Bold " »Yes")) "\t  No" -}}
+{{- else if .NoSelected -}}
+	{{- print "\t  Yes\t" (Foreground "32" (Bold " »No")) -}}
+{{- else -}}
+	{{- "  Yes  No" -}}
+{{- end -}}
+`
+
 // The default template for displaying the results of the prompt. It shows the prompt followed by the choice after a
 // space, highlighted in blue for yes and orange for no.
 const DefaultResultTemplate = `
@@ -25,6 +39,17 @@ const DefaultResultTemplate = `
 	{{- Foreground "32" "Yes" -}}
 {{- else -}}
 	{{- Foreground "166" "No" -}}
+{{- end }}
+`
+
+// This template is the same as the default result template except that the colors for yes and no are inverted; orange
+// for yes and blue for no. Useful when you want to highlight that _confirming_ is the dangerous option.
+const InvertedColorResultTemplate = `
+{{- print .Prompt " " -}}
+{{- if .FinalValue -}}
+	{{- Foreground "166" "Yes" -}}
+{{- else -}}
+	{{- Foreground "32" "No" -}}
 {{- end }}
 `
 

@@ -83,6 +83,15 @@ func WithColorProfile(profile termenv.Profile) Option {
 	}
 }
 
+// This option inverts the colors of the template; orange for yes and blue for no. Use when confirming is the more
+// dangerous or destructive option.
+func WithInvertedColorTemplate() Option {
+	return func(prompt *confirmation.Confirmation) {
+		prompt.Template = InvertedColorTemplate
+		prompt.ResultTemplate = InvertedColorResultTemplate
+	}
+}
+
 // Create a new confirmation prompt by specifying a message to ask the user to answer with yes or no and zero or more
 // options to configure the prompt's behavior.
 func New(message string, options ...Option) *confirmation.Confirmation {
