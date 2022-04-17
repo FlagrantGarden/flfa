@@ -1,7 +1,7 @@
 package persona
 
 import (
-	"github.com/FlagrantGarden/flfa/pkg/flfa/state/user"
+	"github.com/FlagrantGarden/flfa/pkg/flfa/state/player"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/compositor"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/state/persona"
 	tea "github.com/charmbracelet/bubbletea"
@@ -11,7 +11,7 @@ func (model *Model) LoadPersona() tea.Cmd {
 	return func() tea.Msg {
 		var name string
 		// persona not yet set
-		if model.Persona == nil {
+		if model.Player == nil {
 			active := model.Api.Tympan.Configuration.ActiveUserPersona
 			if active != "" {
 				name = active
@@ -35,9 +35,11 @@ func (model *Model) LoadPersona() tea.Cmd {
 
 func (model *Model) InitializePersona(name string, nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
 	return func() tea.Msg {
-		kind := user.Kind()
-		model.Persona = &persona.Persona[user.Data, user.Settings]{Kind: *kind}
-		err := model.Persona.Initialize(name,
+		kind := player.Kind()
+		model.Player = &player.Player{
+			Persona: &persona.Persona[player.Data, player.Settings]{Kind: *kind},
+		}
+		err := model.Player.Initialize(name,
 			model.Api.Tympan.Configuration.FolderPaths.Cache,
 			model.Api.Tympan.AFS,
 		)
@@ -51,7 +53,7 @@ func (model *Model) InitializePersona(name string, nextSubstate compositor.Subst
 
 func (model *Model) SavePersona(nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
 	return func() tea.Msg {
-		err := model.Persona.Save(model.Api.Tympan.AFS)
+		err := model.Player.Save(model.Api.Tympan.AFS)
 		if err != nil {
 			return model.RecordFatalError(err)
 		}
