@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/FlagrantGarden/flfa/pkg/flfa/state/user"
+	"github.com/FlagrantGarden/flfa/pkg/flfa/state/player"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/prompts/confirmer"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/prompts/selector"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/prompts/texter"
-	"github.com/FlagrantGarden/flfa/pkg/tympan/state/persona"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/utils"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/erikgeiser/promptkit/confirmation"
@@ -28,7 +27,7 @@ func GetNameModel() *textinput.Model {
 	return textinput.NewModel(GetName())
 }
 
-func Choose(personas []*persona.Persona[user.Data, user.Settings]) *selection.Selection {
+func ChoosePlayer(personas []player.Player) *selection.Selection {
 	var messageBuilder strings.Builder
 	messageBuilder.WriteString("It looks like this is your first time playing ")
 	messageBuilder.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("5")).Bold(true).Render("Flagrant Factions"))
@@ -52,8 +51,8 @@ func Choose(personas []*persona.Persona[user.Data, user.Settings]) *selection.Se
 	return selector.NewStringSelector(message, choices, selector.WithPageSize(5))
 }
 
-func ChoosePersonaModel(personas []*persona.Persona[user.Data, user.Settings]) *selection.Model {
-	return selection.NewModel(Choose(personas))
+func ChoosePlayerModel(personas []player.Player) *selection.Model {
+	return selection.NewModel(ChoosePlayer(personas))
 }
 
 func SetAsPreferred(name string) *confirmation.Confirmation {

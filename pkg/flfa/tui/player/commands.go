@@ -1,17 +1,17 @@
-package persona
+package player
 
 import (
-	"github.com/FlagrantGarden/flfa/pkg/flfa/state/user"
+	"github.com/FlagrantGarden/flfa/pkg/flfa/state/player"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/compositor"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/state/persona"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (model *Model) LoadPersona() tea.Cmd {
+func (model *Model) LoadPlayer() tea.Cmd {
 	return func() tea.Msg {
 		var name string
 		// persona not yet set
-		if model.Persona == nil {
+		if model.Player == nil {
 			active := model.Api.Tympan.Configuration.ActiveUserPersona
 			if active != "" {
 				name = active
@@ -23,7 +23,7 @@ func (model *Model) LoadPersona() tea.Cmd {
 			name = model.Name
 		}
 
-		userPersona, err := model.Api.GetUserPersona(name, "")
+		userPersona, err := model.Api.GetPlayer(name, "")
 		if err != nil {
 			return model.RecordFatalError(err)
 		}
@@ -33,11 +33,13 @@ func (model *Model) LoadPersona() tea.Cmd {
 	}
 }
 
-func (model *Model) InitializePersona(name string, nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
+func (model *Model) InitializePlayer(name string, nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
 	return func() tea.Msg {
-		kind := user.Kind()
-		model.Persona = &persona.Persona[user.Data, user.Settings]{Kind: *kind}
-		err := model.Persona.Initialize(name,
+		kind := player.Kind()
+		model.Player = &player.Player{
+			Persona: &persona.Persona[player.Data, player.Settings]{Kind: *kind},
+		}
+		err := model.Player.Initialize(name,
 			model.Api.Tympan.Configuration.FolderPaths.Cache,
 			model.Api.Tympan.AFS,
 		)
@@ -49,9 +51,9 @@ func (model *Model) InitializePersona(name string, nextSubstate compositor.Subst
 	}
 }
 
-func (model *Model) SavePersona(nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
+func (model *Model) SavePlayer(nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
 	return func() tea.Msg {
-		err := model.Persona.Save(model.Api.Tympan.AFS)
+		err := model.Player.Save(model.Api.Tympan.AFS)
 		if err != nil {
 			return model.RecordFatalError(err)
 		}
@@ -105,7 +107,7 @@ func (model *Model) UpdateSelectingPersona() (cmd tea.Cmd) {
 	if choice.Value.(string) == "Create a new persona" {
 		cmd = model.SetAndStartSubstate(Naming)
 	} else {
-		cmd = model.InitializePersona(choice.Value.(string), SelectingEditingOption)
+		cmd = model.InitializePlayer(choice.Value.(string), SelectingEditingOption)
 	}
 
 	return cmd
@@ -132,5 +134,5 @@ func (model *Model) UpdateName(nextSubstate compositor.SubstateInterface[*Model]
 		return model.RecordFatalError(err)
 	}
 
-	return model.InitializePersona(name, nextSubstate)
+	return model.InitializePlayer(name, nextSubstate)
 }

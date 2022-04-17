@@ -1,7 +1,7 @@
-package persona
+package player
 
 import (
-	"github.com/FlagrantGarden/flfa/pkg/flfa/tui/persona/prompts"
+	"github.com/FlagrantGarden/flfa/pkg/flfa/tui/player/prompts"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -20,7 +20,7 @@ func (state SubstateEditing) Start(model *Model) (cmd tea.Cmd) {
 	case SelectingEditingOption:
 		// TODO
 	case Renaming:
-		model.Selection = prompts.ChoosePersonaModel(model.Api.Cache.Personas)
+		model.Selection = prompts.ChoosePlayerModel(model.Api.Cache.Players)
 		cmd = model.Selection.Init()
 	}
 

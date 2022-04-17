@@ -1,20 +1,19 @@
-package persona
+package player
 
 import (
 	"fmt"
 	"time"
 
 	"github.com/FlagrantGarden/flfa/pkg/flfa"
-	"github.com/FlagrantGarden/flfa/pkg/flfa/state/user"
+	"github.com/FlagrantGarden/flfa/pkg/flfa/state/player"
 	"github.com/FlagrantGarden/flfa/pkg/flfa/tui"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/compositor"
-	"github.com/FlagrantGarden/flfa/pkg/tympan/state/persona"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type Model struct {
 	tui.SharedModel
-	*persona.Persona[user.Data, user.Settings]
+	*player.Player
 	Substate Substate
 	// Edit
 }
@@ -75,14 +74,14 @@ func NewModel(api *flfa.Api, options ...compositor.Option[*Model]) *Model {
 	return model
 }
 
-func WithPersona(persona *persona.Persona[user.Data, user.Settings]) compositor.Option[*Model] {
+func WithPlayer(persona *player.Player) compositor.Option[*Model] {
 	return func(model *Model) {
-		model.Persona = persona
+		model.Player = persona
 	}
 }
 
 func (model *Model) Init() tea.Cmd {
-	return model.LoadPersona()
+	return model.LoadPlayer()
 }
 
 func (model *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

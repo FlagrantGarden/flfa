@@ -5,11 +5,10 @@ import (
 	"path/filepath"
 
 	"github.com/FlagrantGarden/flfa/pkg/flfa/data"
+	"github.com/FlagrantGarden/flfa/pkg/flfa/state/player"
 	"github.com/FlagrantGarden/flfa/pkg/flfa/state/skirmish"
-	"github.com/FlagrantGarden/flfa/pkg/flfa/state/user"
 	"github.com/FlagrantGarden/flfa/pkg/tympan"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/module/scripting"
-	"github.com/FlagrantGarden/flfa/pkg/tympan/state"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/state/instance"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/state/persona"
 )
@@ -26,7 +25,7 @@ type DataCache struct {
 	Profiles        []data.Profile
 	Spells          []data.Spell
 	Companies       []data.Company
-	Personas        []*persona.Persona[user.Data, user.Settings]
+	Players         []player.Player
 	ScriptModules   []scripting.Module
 	ScriptLibraries []scripting.Library
 }
@@ -83,34 +82,30 @@ func (ffapi *Api) InstalledModules() (installedModules []string, err error) {
 	return
 }
 
-func (ffapi *Api) CacheUserPersonas(cachePath string) {
+func (ffapi *Api) CachePlayers(cachePath string) {
 	if cachePath == "" {
 		cachePath = ffapi.Tympan.Configuration.FolderPaths.Cache
 	}
-	userKind := &state.Kind{
-		Name:       "user",
-		FolderName: "users",
+	discoveredPersonas, _ := persona.DiscoverPersonas[player.Data, player.Settings](player.Kind(), cachePath, ffapi.Tympan.AFS)
+	for _, persona := range discoveredPersonas {
+		ffapi.Cache.Players = append(ffapi.Cache.Players, player.Player{Persona: persona})
 	}
-	discoveredPersonas, _ := persona.DiscoverPersonas[user.Data, user.Settings](userKind, cachePath, ffapi.Tympan.AFS)
-	ffapi.Cache.Personas = discoveredPersonas
 }
 
-func (ffapi *Api) GetUserPersona(name string, cachePath string) (*persona.Persona[user.Data, user.Settings], error) {
+func (ffapi *Api) GetPlayer(name string, cachePath string) (*persona.Persona[player.Data, player.Settings], error) {
 	if cachePath == "" {
 		cachePath = ffapi.Tympan.Configuration.FolderPaths.Cache
 	}
-	userKind := user.Kind()
-	return persona.GetPersona[user.Data, user.Settings](name, userKind, cachePath, ffapi.Tympan.AFS)
+	return persona.GetPersona[player.Data, player.Settings](name, player.Kind(), cachePath, ffapi.Tympan.AFS)
 }
 
-func (ffapi *Api) GetActiveSkirmish(activeUserPersona *persona.Persona[user.Data, user.Settings], cachePath string) (*instance.Instance[skirmish.Skirmish], error) {
+func (ffapi *Api) GetActiveSkirmish(activeUserPersona *persona.Persona[player.Data, player.Settings], cachePath string) (*instance.Instance[skirmish.Skirmish], error) {
 	if cachePath == "" {
 		cachePath = ffapi.Tympan.Configuration.FolderPaths.Cache
 	}
-	skirmishKind := skirmish.Kind()
 	skirmishPersona := &instance.Persona{
 		Name: activeUserPersona.Name,
 		Kind: activeUserPersona.Kind,
 	}
-	return instance.GetInstance[skirmish.Skirmish](activeUserPersona.Settings.ActiveSkirmish, skirmishKind, skirmishPersona, cachePath, ffapi.Tympan.AFS)
+	return instance.GetInstance[skirmish.Skirmish](activeUserPersona.Settings.ActiveSkirmish, skirmish.Kind(), skirmishPersona, cachePath, ffapi.Tympan.AFS)
 }
