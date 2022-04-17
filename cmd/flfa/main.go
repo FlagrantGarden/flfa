@@ -24,6 +24,7 @@ package main
 import (
 	"context"
 
+	"github.com/FlagrantGarden/flfa/cmd/flfa/editor"
 	"github.com/FlagrantGarden/flfa/cmd/flfa/play"
 	"github.com/FlagrantGarden/flfa/docs"
 	"github.com/FlagrantGarden/flfa/emfs"
@@ -112,6 +113,14 @@ func main() {
 	}
 	play_cmd := play_cmder.CreateCommand()
 	root_cmd.AddCommand(play_cmd)
+
+	// flfa editor
+
+	editor_cmder := editor.EditorCommand{
+		Api: api,
+	}
+	editor_cmd := editor_cmder.CreateCommand()
+	root_cmd.AddCommand(editor_cmd)
 
 	// initialize
 	cobra.OnInitialize(root_cmder.InitLogger, root_cmder.InitConfig)
