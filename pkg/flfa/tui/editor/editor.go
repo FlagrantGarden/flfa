@@ -123,6 +123,8 @@ func (model *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case compositor.EndMsg:
 		return model, model.UpdateOnSubmodelEnded()
+	case tea.WindowSizeMsg:
+		model.SetSize(msg.Width, msg.Height)
 	}
 
 	// Passthru to submodel
@@ -142,5 +144,5 @@ func (model *Model) View() (view string) {
 		view = model.ViewFatalError()
 	}
 
-	return view
+	return model.Display("Editor", view)
 }
