@@ -122,7 +122,10 @@ func (model *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return model, cmd
 		}
 	case compositor.EndMsg:
-		return model, model.UpdateOnSubmodelEnded()
+		cmd := model.UpdateOnSubmodelEnded()
+		if cmd != nil {
+			return model, cmd
+		}
 	case tea.WindowSizeMsg:
 		model.SetSize(msg.Width, msg.Height)
 	}

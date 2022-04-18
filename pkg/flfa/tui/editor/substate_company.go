@@ -41,14 +41,14 @@ func (state SubstateCompany) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
 func (state SubstateCompany) UpdateOnEnded(model *Model) (cmd tea.Cmd) {
 	switch state {
 	case CreatingCompany:
-		switch model.Player.State {
+		switch model.Company.State {
 		case compositor.StateCancelled:
 			cmd = model.SetAndStartSubstate(SelectingOption)
 		case compositor.StateDone:
 			cmd = model.AddCompany()
 		}
 	case EditingCompany:
-		switch model.Player.State {
+		switch model.Company.State {
 		case compositor.StateCancelled:
 			cmd = model.SetAndStartSubstate(SelectingOption)
 		case compositor.StateDone:
