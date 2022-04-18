@@ -154,7 +154,7 @@ func (model *Compositor) Cancelled() tea.Msg {
 	if model.IsSubmodel {
 		return EndMsg{}
 	} else {
-		return tea.Quit
+		return tea.Quit()
 	}
 }
 
@@ -165,7 +165,7 @@ func (model *Compositor) Done() tea.Msg {
 	if model.IsSubmodel {
 		return EndMsg{}
 	} else {
-		return tea.Quit
+		return tea.Quit()
 	}
 }
 
