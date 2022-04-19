@@ -14,14 +14,14 @@ type SharedModel struct {
 }
 
 func (model *SharedModel) SaveConfig() tea.Cmd {
-	return func() tea.Msg {
-		err := model.Api.Tympan.SaveConfig()
-		if err != nil {
-			return model.RecordFatalError(err)
-		}
-		model.State = compositor.StateSavedConfiguration
-		return nil
+	err := model.Api.Tympan.SaveConfig()
+	if err != nil {
+		return model.RecordFatalError(err)
 	}
+
+	model.State = compositor.StateSavedConfiguration
+
+	return nil
 }
 
 func Title(subtitle string, width int, options ...terminal.Option) string {
