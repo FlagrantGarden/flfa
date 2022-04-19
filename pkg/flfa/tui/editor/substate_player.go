@@ -9,15 +9,23 @@ import (
 type SubstatePlayer int
 
 const (
-	SelectingPlayer SubstatePlayer = iota
+	LoadingPlayer SubstatePlayer = iota
+	SelectingPlayer
 )
 
 func (state SubstatePlayer) Start(model *Model) (cmd tea.Cmd) {
-	model.Api.CachePlayers("")
-	model.Player = player.NewModel(model.Api, player.AsSubModel())
-	cmd = model.Player.Init()
+	switch state {
+	case LoadingPlayer:
+		model.Player = player.NewModel(model.Api, player.AsSubModel(), player.WithLoadActivePlayer())
+	case SelectingPlayer:
+		model.Api.CachePlayers("")
+		if model.Player != nil {
+			model.Cache.Player = model.Player.Player
+		}
+		model.Player = player.NewModel(model.Api, player.AsSubModel())
+	}
 
-	return cmd
+	return model.Player.Init()
 }
 
 func (state SubstatePlayer) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
@@ -32,7 +40,12 @@ func (state SubstatePlayer) UpdateOnEnded(model *Model) (cmd tea.Cmd) {
 	switch model.Player.State {
 	case compositor.StateCancelled:
 		if model.Player.Player == nil {
-			cmd = model.Cancelled
+			if model.Cache.Player == nil {
+				cmd = model.Cancelled
+			} else {
+				model.Player.Player = model.Cache.Player
+				cmd = model.SetAndStartSubstate(SelectingOption)
+			}
 		} else {
 			cmd = model.SetAndStartSubstate(SelectingOption)
 		}

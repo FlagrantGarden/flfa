@@ -18,6 +18,7 @@ type Model struct {
 	Player   *player.Model
 	Company  *company.Model
 	Indexes  Indexes
+	Cache    Cache
 	Substate Substate
 }
 
@@ -33,6 +34,10 @@ type Indexes struct {
 	RemovingCompany int
 }
 
+type Cache struct {
+	Player *persona.Player
+}
+
 type Substate struct {
 	Editing SubstateEditing
 	Player  SubstatePlayer
@@ -42,7 +47,7 @@ type Substate struct {
 func (model *Model) SetAndStartState(state compositor.State) (cmd tea.Cmd) {
 	switch state {
 	case StatePlayerMenu:
-		cmd = model.SetAndStartSubstate(SelectingPlayer)
+		cmd = model.SetAndStartSubstate(LoadingPlayer)
 	case StateCompanyMenu:
 		cmd = model.SetAndStartSubstate(EditingCompany)
 	case StateRosterMenu:

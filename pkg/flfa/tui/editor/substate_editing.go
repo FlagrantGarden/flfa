@@ -48,9 +48,7 @@ func (state SubstateEditing) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 	switch state {
 	case SelectingOption:
 		cmd = model.UpdateSelectMenuOption()
-	case SelectingCompanyToEdit:
-		cmd = model.UpdateSelectPlayerCompany()
-	case SelectingCompanyToRemove:
+	case SelectingCompanyToEdit, SelectingCompanyToRemove:
 		cmd = model.UpdateSelectPlayerCompany()
 	case ConfirmRemoval:
 		cmd = model.UpdateConfirmRemoval()
@@ -66,13 +64,11 @@ func (state SubstateEditing) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 func (state SubstateEditing) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
 	switch state {
 	case SelectingOption:
-		// Prompt to save if changes made
-	case SelectingCompanyToEdit:
+		cmd = model.Quit()
+	case SelectingCompanyToEdit, SelectingCompanyToRemove, ConfirmSave, ConfirmQuitWithoutSaving:
 		cmd = model.SetAndStartSubstate(SelectingOption)
-	case ConfirmSave:
-		cmd = model.SetAndStartSubstate(SelectingOption)
-	case ConfirmQuitWithoutSaving:
-		cmd = model.SetAndStartSubstate(SelectingOption)
+	case ConfirmRemoval:
+		cmd = model.SetAndStartSubstate(SelectingCompanyToRemove)
 	}
 	return cmd
 }
