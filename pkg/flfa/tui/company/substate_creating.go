@@ -60,10 +60,12 @@ func (state SubstateCreating) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 }
 
 func (state SubstateCreating) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
-	switch state {
-	case Naming:
-	case Describing:
-	case AddingFirstGroup:
+	if model.Company == nil {
+		cmd = model.SetAndStartSubstate(SelectingCompany)
+	} else if model.IsSubmodel {
+		cmd = model.Cancelled
+	} else {
+		cmd = tea.Quit
 	}
 
 	return cmd

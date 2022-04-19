@@ -27,9 +27,9 @@ func (model *Model) UpdateOnKeyPress(msg tea.KeyMsg) (cmd tea.Cmd) {
 	case "esc":
 		switch model.State {
 		case StateCreatingGroup:
-			// confirm you want to cancel/exit model, goto ready state
+			cmd = model.Substate.Creation.UpdateOnEsc(model)
 		case StateEditingGroup:
-			// return to selection menu; if on selection menu, confirm to exit model
+			cmd = model.Substate.Editing.UpdateOnEsc(model)
 		}
 	case "enter":
 		switch model.State {
@@ -116,7 +116,6 @@ func (model *Model) UpdateEditingChoice() (cmd tea.Cmd) {
 	switch choice.String {
 	case "Save & Continue":
 		if model.IsSubmodel {
-			model.State = compositor.StateReady
 			return model.Done
 		}
 

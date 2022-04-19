@@ -66,7 +66,18 @@ func (state SubstateEditing) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 }
 
 func (state SubstateEditing) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
-	// TODO
+	switch state {
+	case SelectingOption:
+		if model.IsSubmodel {
+			cmd = model.Cancelled
+		} else {
+			cmd = tea.Quit
+		}
+	case Renaming, ChangingBaseProfile, AddingSpecialTrait, RemovingSpecialTrait, MakingTraitChoice:
+		cmd = model.SetAndStartSubstate(SelectingOption)
+	case ConfirmingBaseProfileUpdate:
+		cmd = model.SetAndStartSubstate(ChangingBaseProfile)
+	}
 	return cmd
 }
 

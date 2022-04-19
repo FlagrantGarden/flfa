@@ -138,19 +138,17 @@ func (state SubstateEditing) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 func (state SubstateEditing) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
 	switch state {
 	case SelectingOption:
-	case Renaming:
-	case Redescribing:
-	case AddingGroup:
-	case SelectingGroupToEdit:
-	case SelectingGroupToPromote:
-	case EditingGroup:
-	case RemovingGroup:
-	case SelectingCaptainOption:
-	case RerollingCaptainTrait:
-	case SelectingCaptainTrait:
-	case SelectingCaptainReplacement:
+		if model.IsSubmodel {
+			cmd = model.Cancelled
+		} else {
+			cmd = tea.Quit
+		}
+	case Renaming, Redescribing, SelectingGroupToEdit, SelectingGroupToPromote, CopyingGroup, SelectingCaptainOption:
+		cmd = model.SetAndStartSubstate(SelectingOption)
+	case RerollingCaptainTrait, SelectingCaptainTrait, SelectingCaptainReplacement, ConfirmingCaptainDemotion:
+		cmd = model.SetAndStartSubstate(SelectingCaptainOption)
 	case ConfirmingCaptainReplacement:
-	case ConfirmingCaptainDemotion:
+		cmd = model.SetAndStartSubstate(SelectingCaptainReplacement)
 	}
 
 	return cmd

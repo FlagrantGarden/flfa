@@ -31,7 +31,11 @@ func (state SubstateChoosing) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 }
 
 func (state SubstateChoosing) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
-	// TODO
+	if model.IsSubmodel {
+		cmd = model.Cancelled
+	} else {
+		cmd = tea.Quit
+	}
 	return cmd
 }
 

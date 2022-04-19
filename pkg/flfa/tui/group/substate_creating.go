@@ -41,8 +41,10 @@ func (state SubstateCreating) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 }
 
 func (state SubstateCreating) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
-	// TODO
-	return cmd
+	if model.IsSubmodel {
+		return model.Cancelled
+	}
+	return tea.Quit
 }
 
 func (state SubstateCreating) UpdateOnEnded(model *Model) (cmd tea.Cmd) {
