@@ -30,14 +30,23 @@ func (state SubstateCreating) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 	case Naming:
 		cmd = model.UpdateName(DecidingIfPreferred)
 	case DecidingIfPreferred:
-		cmd = model.UpdateConfirmPreferred()
+		cmd = model.UpdateConfirmPreferred(StateEditingPersona)
 	}
 
 	return cmd
 }
 
 func (state SubstateCreating) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
-	// TODO
+	switch state {
+	case Naming:
+		if model.IsSubmodel {
+			cmd = model.Cancelled
+		} else {
+			cmd = tea.Quit
+		}
+	case DecidingIfPreferred:
+		cmd = model.UpdateConfirmPreferred(StateEditingPersona)
+	}
 	return cmd
 }
 

@@ -18,7 +18,12 @@ const (
 func (state SubstateEditing) Start(model *Model) (cmd tea.Cmd) {
 	switch state {
 	case SelectingEditingOption:
-		// TODO
+		// TODO; for now, just send a done message if submodel or quit
+		if model.IsSubmodel {
+			cmd = model.Done
+		} else {
+			cmd = tea.Quit
+		}
 	case Renaming:
 		model.Selection = prompts.ChoosePlayerModel(model.Api.Cache.Players)
 		cmd = model.Selection.Init()

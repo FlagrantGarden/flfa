@@ -8,29 +8,27 @@ import (
 )
 
 func (model *Model) LoadPlayer() tea.Cmd {
-	return func() tea.Msg {
-		var name string
-		// persona not yet set
-		if model.Player == nil {
-			active := model.Api.Tympan.Configuration.ActiveUserPersona
-			if active != "" {
-				name = active
-			} else {
-				// no preferred user account; go choose one
-				return model.SetAndStartSubstate(SelectingPersona)
-			}
-		} else {
-			name = model.Name
+	var name string
+	// persona not yet set
+	if model.Player == nil {
+		if model.Options.LoadActivePlayer {
+			name = model.Api.Tympan.Configuration.ActiveUserPersona
 		}
-
-		foundPlayer, err := model.Api.GetPlayer(name, "")
-		if err != nil {
-			return model.RecordFatalError(err)
+		if name == "" {
+			// no preferred user account; go choose one
+			return model.SetAndStartSubstate(SelectingPersona)
 		}
-
-		model.Player = &foundPlayer
-		return model.SetAndStartState(StateEditingPersona)
+	} else {
+		name = model.Name
 	}
+
+	foundPlayer, err := model.Api.GetPlayer(name, "")
+	if err != nil {
+		return model.RecordFatalError(err)
+	}
+
+	model.Player = &foundPlayer
+	return model.SetAndStartState(StateEditingPersona)
 }
 
 func (model *Model) InitializePlayer(name string, nextSubstate compositor.SubstateInterface[*Model]) tea.Cmd {
@@ -44,10 +42,6 @@ func (model *Model) InitializePlayer(name string, nextSubstate compositor.Substa
 	)
 	if err != nil {
 		return model.RecordFatalError(err)
-	}
-
-	if model.IsSubmodel {
-		return model.SetAndStartState(compositor.StateDone)
 	}
 
 	return model.SetAndStartSubstate(nextSubstate)
@@ -81,7 +75,14 @@ func (model *Model) UpdateOnKeyPress(msg tea.KeyMsg) (cmd tea.Cmd) {
 	case "ctrl+c":
 		cmd = tea.Quit
 	case "esc":
-		// TODO
+		switch model.State {
+		case StateChoosingPersona:
+			cmd = model.Substate.Choosing.UpdateOnEsc(model)
+		case StateCreatingPersona:
+			cmd = model.Substate.Creating.UpdateOnEsc(model)
+		case StateEditingPersona:
+			cmd = model.Substate.Editing.UpdateOnEsc(model)
+		}
 	case "enter":
 		switch model.State {
 		case StateChoosingPersona:
@@ -115,7 +116,7 @@ func (model *Model) UpdateSelectingPersona() (cmd tea.Cmd) {
 	return cmd
 }
 
-func (model *Model) UpdateConfirmPreferred() (cmd tea.Cmd) {
+func (model *Model) UpdateConfirmPreferred(nextState compositor.State) (cmd tea.Cmd) {
 	makePreferred, err := model.Confirmation.Value()
 	if err != nil {
 		return model.RecordFatalError(err)
@@ -125,6 +126,11 @@ func (model *Model) UpdateConfirmPreferred() (cmd tea.Cmd) {
 		model.Api.Tympan.Configuration.ActiveUserPersona = model.Name
 		model.State = compositor.StateSavingConfiguration
 		cmd = model.SaveConfig()
+		if cmd == nil {
+			cmd = model.SetAndStartState(nextState)
+		}
+	} else {
+		cmd = model.SetAndStartState(nextState)
 	}
 
 	return cmd

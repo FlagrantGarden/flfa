@@ -15,7 +15,12 @@ type Model struct {
 	tui.SharedModel
 	*player.Player
 	Substate Substate
+	Options  OptionFlags
 	// Edit
+}
+
+type OptionFlags struct {
+	LoadActivePlayer bool
 }
 
 const (
@@ -39,9 +44,17 @@ func (model *Model) SetAndStartState(state compositor.State) (cmd tea.Cmd) {
 	case StateEditingPersona:
 		cmd = model.SetAndStartSubstate(SelectingEditingOption)
 	case compositor.StateDone:
-		cmd = model.Done
+		if model.IsSubmodel {
+			cmd = model.Done
+		} else {
+			cmd = tea.Quit
+		}
 	case compositor.StateCancelled:
-		cmd = model.Cancelled
+		if model.IsSubmodel {
+			cmd = model.Cancelled
+		} else {
+			cmd = tea.Quit
+		}
 	case compositor.StateReady:
 		model.State = compositor.StateReady
 		cmd = nil
@@ -60,6 +73,10 @@ func (model *Model) SetAndStartSubstate(substate compositor.SubstateInterface[*M
 		model.State = StateCreatingPersona
 		model.Substate.Creating = substate.(SubstateCreating)
 		cmd = model.Substate.Creating.Start(model)
+	case SubstateEditing:
+		model.State = StateEditingPersona
+		model.Substate.Editing = substate.(SubstateEditing)
+		cmd = model.Substate.Editing.Start(model)
 	}
 	return cmd
 }
@@ -81,6 +98,12 @@ func NewModel(api *flfa.Api, options ...compositor.Option[*Model]) *Model {
 func WithPlayer(persona *player.Player) compositor.Option[*Model] {
 	return func(model *Model) {
 		model.Player = persona
+	}
+}
+
+func WithLoadActivePlayer() compositor.Option[*Model] {
+	return func(model *Model) {
+		model.Options.LoadActivePlayer = true
 	}
 }
 
