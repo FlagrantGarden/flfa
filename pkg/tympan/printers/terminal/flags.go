@@ -83,3 +83,39 @@ func (settings *Settings) Flag(name string) Flag {
 	}
 	return FlagUnset
 }
+
+// Retrieve the current state of a flag by name from an instance of terminal settings.
+// Return true if the flag is On, otherwise false.
+func (settings *Settings) FlagIsOn(name string) bool {
+	flag := settings.Flag(name)
+
+	if flag == FlagOn {
+		return true
+	}
+
+	return false
+}
+
+// Retrieve the current state of a flag by name from an instance of terminal settings.
+// Return true if the flag is Off, otherwise false.
+func (settings *Settings) FlagIsOff(name string) bool {
+	flag := settings.Flag(name)
+
+	if flag == FlagOff {
+		return true
+	}
+
+	return false
+}
+
+// Retrieve the current state of a flag by name from an instance of terminal settings.
+// Return true if the flag is Unset, otherwise false.
+func (settings *Settings) FlagIsUnset(name string) bool {
+	flag := settings.Flag(name)
+
+	if flag == FlagUnset {
+		return true
+	}
+
+	return false
+}

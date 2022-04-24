@@ -75,6 +75,18 @@ func (settings *Settings) Copy() (*Settings, error) {
 		copy.Styles.Extra[name] = style.Copy()
 	}
 
+	// Flags also need to be reset manually, because copystructure points them elsewhere in memory.
+	for flag, setting := range settings.Flags {
+		switch setting {
+		case FlagOn:
+			copy.SetFlagOn(flag)
+		case FlagOff:
+			copy.SetFlagOff(flag)
+		default:
+			copy.SetFlag(flag, FlagUnset)
+		}
+	}
+
 	return copy, nil
 }
 
