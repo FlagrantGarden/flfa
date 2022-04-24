@@ -25,7 +25,8 @@ func (list DynamicStyleList) Delete(key string) {
 // This terminal settings option sets a dynamic style for a new instance of terminal settings,
 // creating it if it doesn't exist or overwriting it if it does.
 func WithDynamicStyle(name string, operations ...Operation) Option {
-	return func(settings *Settings) {
+	return func(settings *Settings) *Settings {
 		settings.DynamicStyles.Set(name, operations...)
+		return settings
 	}
 }

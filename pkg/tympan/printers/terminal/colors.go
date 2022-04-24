@@ -16,38 +16,43 @@ type Colors struct {
 
 // This terminal settings option sets the subtle color for a new instance of terminal settings.
 func WithSubtleColor(color lipgloss.TerminalColor) Option {
-	return func(settings *Settings) {
+	return func(settings *Settings) *Settings {
 		settings.Colors.Subtle = color
+		return settings
 	}
 }
 
 // This terminal settings option sets the lead color for a new instance of terminal settings.
 func WithLeadColor(color lipgloss.TerminalColor) Option {
-	return func(settings *Settings) {
+	return func(settings *Settings) *Settings {
 		settings.Colors.Lead = color
+		return settings
 	}
 }
 
 // This terminal settings option sets the body color for a new instance of terminal settings.
 func WithBodyColor(color lipgloss.TerminalColor) Option {
-	return func(settings *Settings) {
+	return func(settings *Settings) *Settings {
 		settings.Colors.Body = color
+		return settings
 	}
 }
 
 // This terminal settings option adds an extra color to a new instance of terminal settings or updates the color if it
 // has already been added to the map. This can be used to extend/modify the list of extra colors safely in a loop.
 func WithExtraColor(name string, color lipgloss.TerminalColor) Option {
-	return func(settings *Settings) {
+	return func(settings *Settings) *Settings {
 		settings.Colors.Extra[name] = color
+		return settings
 	}
 }
 
 // This terminal settings option sets the extra colors for a new instance of terminal settings to exactly the map that
 // you pass to it; if this option is applied after any others which modify the extra colors, it replaces all of them.
 func WithExtraColors(extras map[string]lipgloss.TerminalColor) Option {
-	return func(settings *Settings) {
+	return func(settings *Settings) *Settings {
 		settings.Colors.Extra = extras
+		return settings
 	}
 }
 

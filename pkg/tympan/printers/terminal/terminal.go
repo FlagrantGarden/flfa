@@ -1,9 +1,8 @@
 package terminal
 
 import (
-	"encoding/json"
-
 	"github.com/charmbracelet/lipgloss"
+	"github.com/mitchellh/copystructure"
 )
 
 // Configuration for how a given object should be printed to the terminal
@@ -19,7 +18,7 @@ type Settings struct {
 }
 
 // An Option returns a function which modifies a Settings object. Options provide a friendlier UX for creating settings.
-type Option func(settings *Settings)
+type Option func(settings *Settings) *Settings
 
 // Creates a new Settings object, ensuring the maps for flags and extra colors/styles exist. Applies specified options
 // in the order they are specified (if they conflict, last option applies).
@@ -37,7 +36,7 @@ func New(options ...Option) (settings *Settings) {
 	}
 
 	for _, option := range options {
-		option(settings)
+		settings = option(settings)
 	}
 
 	return settings
@@ -63,18 +62,20 @@ func (settings *Settings) ApplyAndRender(text string, operations ...Operation) s
 
 // Deep clones a given terminal settings object, returning a pointer to the clone.
 func (settings *Settings) Copy() (*Settings, error) {
-	marshalled, err := json.Marshal(settings)
+	clone, err := copystructure.Copy(settings)
 	if err != nil {
 		return nil, err
 	}
 
-	clone := &Settings{}
-
-	if err = json.Unmarshal(marshalled, clone); err != nil {
-		return nil, err
+	copy := clone.(*Settings)
+	// The copy gets you halfway, but can't copy the styles because the settings are not exported.
+	// Those need to be done manually.
+	copy.Styles.Primary = settings.Styles.Primary.Copy()
+	for name, style := range settings.Styles.Extra {
+		copy.Styles.Extra[name] = style.Copy()
 	}
 
-	return clone, nil
+	return copy, nil
 }
 
 // Return a dynamic style from the list of dynamic styles, applying the
@@ -98,10 +99,13 @@ func (settings *Settings) RenderWithDynamicStyle(name string, text string) strin
 	return settings.DynamicStyle(name).Render(text)
 }
 
-// TODO: remember why I added this.
-// func As(source Settings) Option {
-// 	return func(settings *Settings) {
-// 		clone := source
-// 		settings = &clone
-// 	}
-// }
+// This option allows you to create a new Settings instance from an existing one;
+// Because this wholly replaces the settings with the source instance, this should
+// always be the first option if it is specified as it will functionally ignore all
+// previous options.
+func From(source Settings) Option {
+	return func(settings *Settings) *Settings {
+		settings, _ = source.Copy()
+		return settings
+	}
+}

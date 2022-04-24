@@ -19,8 +19,9 @@ var (
 // A terminal settings option to add a flag by name and value to the list of flags for that setting. If the flag already
 // exists, this option will override it.
 func WithFlag(name string, setting Flag) Option {
-	return func(settings *Settings) {
+	return func(settings *Settings) *Settings {
 		settings.Flags[name] = setting
+		return settings
 	}
 }
 
