@@ -37,6 +37,7 @@ func ChooseCompany(settings *terminal.Settings, creating bool, companies []data.
 		message,
 		companyNames,
 		selector.WithPageSize(5),
+		selector.WithSelectedChoiceStyle(selector.ColorizedBasicSelectedChoiceStyle(settings.ExtraColor("highlight"))),
 	)
 }
 
@@ -90,6 +91,7 @@ func SelectOption(settings *terminal.Settings, canRemoveAGroup bool, hasCaptain 
 		"What would you like to do with this Company?",
 		options,
 		selector.WithPageSize(5),
+		selector.WithSelectedChoiceStyle(selector.ColorizedBasicSelectedChoiceStyle(settings.ExtraColor("highlight"))),
 	)
 }
 
@@ -190,6 +192,7 @@ func SelectCaptaincyOption(settings *terminal.Settings) *selection.Selection {
 		"What do you want to do about the Captain?",
 		options,
 		selector.WithPageSize(5),
+		selector.WithSelectedChoiceStyle(selector.ColorizedBasicSelectedChoiceStyle(settings.ExtraColor("highlight"))),
 	)
 }
 

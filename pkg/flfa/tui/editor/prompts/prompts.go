@@ -23,6 +23,7 @@ func SelectMenuOption(settings *terminal.Settings, hasCompanies bool) *selection
 		"What would you like to do?",
 		options,
 		selector.WithPageSize(5),
+		selector.WithSelectedChoiceStyle(selector.ColorizedBasicSelectedChoiceStyle(settings.ExtraColor("highlight"))),
 	)
 }
 

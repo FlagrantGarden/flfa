@@ -26,6 +26,7 @@ func SelectProfile(settings *terminal.Settings, profiles []data.Profile) *select
 		"What profile should this Group have?",
 		profileNames,
 		selector.WithPageSize(5),
+		selector.WithSelectedChoiceStyle(selector.ColorizedBasicSelectedChoiceStyle(settings.ExtraColor("highlight"))),
 	)
 }
 
@@ -64,6 +65,7 @@ func SelectGroupEditingOption(settings *terminal.Settings, hasAddableTraits bool
 		"What would you like to do with this Group?",
 		options,
 		selector.WithPageSize(5),
+		selector.WithSelectedChoiceStyle(selector.ColorizedBasicSelectedChoiceStyle(settings.ExtraColor("highlight"))),
 	)
 }
 

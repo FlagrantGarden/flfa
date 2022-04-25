@@ -48,7 +48,12 @@ func ChoosePlayer(settings *terminal.Settings, personas []player.Player) *select
 		choices = append(choices, "default")
 	}
 
-	return selector.NewStringSelector(message, choices, selector.WithPageSize(5))
+	return selector.NewStringSelector(
+		message,
+		choices,
+		selector.WithPageSize(5),
+		selector.WithSelectedChoiceStyle(selector.ColorizedBasicSelectedChoiceStyle(settings.ExtraColor("highlight"))),
+	)
 }
 
 func ChoosePlayerModel(settings *terminal.Settings, personas []player.Player) *selection.Model {
