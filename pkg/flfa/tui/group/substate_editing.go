@@ -25,22 +25,22 @@ func (state SubstateEditing) Start(model *Model) (cmd tea.Cmd) {
 	case SelectingOption:
 		canAddTraits := len(model.ApplicableTraits()) > 0
 		canRemoveTraits := len(model.RemovableTraits()) > 0
-		model.Selection = prompts.SelectGroupEditingOptionModel(canAddTraits, canRemoveTraits)
+		model.Selection = prompts.SelectGroupEditingOptionModel(model.TerminalSettings, canAddTraits, canRemoveTraits)
 		cmd = model.Selection.Init()
 	case Renaming:
-		model.TextInput = prompts.GetGroupNameModel()
+		model.TextInput = prompts.GetGroupNameModel(model.TerminalSettings)
 		cmd = model.TextInput.Init()
 	case ChangingBaseProfile:
-		model.Selection = prompts.SelectProfileModel(model.ApplicableProfiles())
+		model.Selection = prompts.SelectProfileModel(model.TerminalSettings, model.ApplicableProfiles())
 		cmd = model.Selection.Init()
 	case ConfirmingBaseProfileUpdate:
-		model.Confirmation = prompts.ConfirmChangeBaseProfileModel(model.Temp.ProfileName)
+		model.Confirmation = prompts.ConfirmChangeBaseProfileModel(model.TerminalSettings, model.Temp.ProfileName)
 		cmd = model.Confirmation.Init()
 	case AddingSpecialTrait:
-		model.Selection = prompts.SelectAddSpecialTraitModel(model.ApplicableTraits())
+		model.Selection = prompts.SelectAddSpecialTraitModel(model.TerminalSettings, model.ApplicableTraits())
 		cmd = model.Selection.Init()
 	case RemovingSpecialTrait:
-		model.Selection = prompts.SelectRemoveSpecialTraitModel(model.RemovableTraits())
+		model.Selection = prompts.SelectRemoveSpecialTraitModel(model.TerminalSettings, model.RemovableTraits())
 		cmd = model.Selection.Init()
 	case MakingTraitChoice:
 		model.TraitChooser = dynamic.New(model.CurrentTraitChoice().Prompt)
@@ -66,7 +66,18 @@ func (state SubstateEditing) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 }
 
 func (state SubstateEditing) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
-	// TODO
+	switch state {
+	case SelectingOption:
+		if model.IsSubmodel {
+			cmd = model.Cancelled
+		} else {
+			cmd = tea.Quit
+		}
+	case Renaming, ChangingBaseProfile, AddingSpecialTrait, RemovingSpecialTrait, MakingTraitChoice:
+		cmd = model.SetAndStartSubstate(SelectingOption)
+	case ConfirmingBaseProfileUpdate:
+		cmd = model.SetAndStartSubstate(ChangingBaseProfile)
+	}
 	return cmd
 }
 

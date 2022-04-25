@@ -18,7 +18,7 @@ func (state SubstateCreating) Start(model *Model) (cmd tea.Cmd) {
 		model.TextInput = prompts.GetNameModel()
 		cmd = model.TextInput.Init()
 	case DecidingIfPreferred:
-		model.Confirmation = prompts.SetAsPreferredModel(model.Name)
+		model.Confirmation = prompts.SetAsPreferredModel(model.TerminalSettings, model.Name)
 		cmd = model.Confirmation.Init()
 	}
 
@@ -30,14 +30,23 @@ func (state SubstateCreating) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 	case Naming:
 		cmd = model.UpdateName(DecidingIfPreferred)
 	case DecidingIfPreferred:
-		cmd = model.UpdateConfirmPreferred()
+		cmd = model.UpdateConfirmPreferred(StateEditingPersona)
 	}
 
 	return cmd
 }
 
 func (state SubstateCreating) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
-	// TODO
+	switch state {
+	case Naming:
+		if model.IsSubmodel {
+			cmd = model.Cancelled
+		} else {
+			cmd = tea.Quit
+		}
+	case DecidingIfPreferred:
+		cmd = model.UpdateConfirmPreferred(StateEditingPersona)
+	}
 	return cmd
 }
 

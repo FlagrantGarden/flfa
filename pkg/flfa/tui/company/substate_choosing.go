@@ -14,7 +14,7 @@ const (
 func (state SubstateChoosing) Start(model *Model) (cmd tea.Cmd) {
 	switch model.Substate.Choosing {
 	case SelectingCompany:
-		model.Selection = prompts.ChooseCompanyModel(true, model.AvailableCompanies)
+		model.Selection = prompts.ChooseCompanyModel(model.TerminalSettings, true, model.AvailableCompanies)
 		cmd = model.Selection.Init()
 	}
 
@@ -31,7 +31,11 @@ func (state SubstateChoosing) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 }
 
 func (state SubstateChoosing) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
-	// TODO
+	if model.IsSubmodel {
+		cmd = model.Cancelled
+	} else {
+		cmd = tea.Quit
+	}
 	return cmd
 }
 

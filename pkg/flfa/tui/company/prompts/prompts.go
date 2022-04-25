@@ -7,6 +7,7 @@ import (
 
 	"github.com/FlagrantGarden/flfa/pkg/flfa/data"
 	tprompts "github.com/FlagrantGarden/flfa/pkg/flfa/tui/traits/prompts"
+	"github.com/FlagrantGarden/flfa/pkg/tympan/printers/terminal"
 	pterm "github.com/FlagrantGarden/flfa/pkg/tympan/printers/terminal"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/prompts/confirmer"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/prompts/selector"
@@ -17,7 +18,7 @@ import (
 	"github.com/erikgeiser/promptkit/textinput"
 )
 
-func ChooseCompany(creating bool, companies []data.Company) *selection.Selection {
+func ChooseCompany(settings *terminal.Settings, creating bool, companies []data.Company) *selection.Selection {
 	var companyNames []string
 	var message string
 
@@ -36,36 +37,37 @@ func ChooseCompany(creating bool, companies []data.Company) *selection.Selection
 		message,
 		companyNames,
 		selector.WithPageSize(5),
+		selector.WithSelectedChoiceStyle(selector.ColorizedBasicSelectedChoiceStyle(settings.ExtraColor("highlight"))),
 	)
 }
 
-func ChooseCompanyModel(creating bool, companies []data.Company) *selection.Model {
-	return selection.NewModel(ChooseCompany(creating, companies))
+func ChooseCompanyModel(settings *terminal.Settings, creating bool, companies []data.Company) *selection.Model {
+	return selection.NewModel(ChooseCompany(settings, creating, companies))
 }
 
-func GetName() *textinput.TextInput {
+func GetName(settings *terminal.Settings) *textinput.TextInput {
 	return texter.New(
 		"What is this company called?",
 		texter.WithPlaceholder("Name cannot be empty"),
 	)
 }
 
-func GetNameModel() *textinput.Model {
-	return textinput.NewModel(GetName())
+func GetNameModel(settings *terminal.Settings) *textinput.Model {
+	return textinput.NewModel(GetName(settings))
 }
 
-func GetDescription() *textinput.TextInput {
+func GetDescription(settings *terminal.Settings) *textinput.TextInput {
 	return texter.New(
 		"How would you describe this company?",
 		texter.WithPlaceholder("Description cannot be empty"),
 	)
 }
 
-func GetDescriptionModel() *textinput.Model {
-	return textinput.NewModel(GetDescription())
+func GetDescriptionModel(settings *terminal.Settings) *textinput.Model {
+	return textinput.NewModel(GetDescription(settings))
 }
 
-func SelectOption(canRemoveAGroup bool, hasCaptain bool) *selection.Selection {
+func SelectOption(settings *terminal.Settings, canRemoveAGroup bool, hasCaptain bool) *selection.Selection {
 	options := []string{
 		"Save & Continue",
 		"Change Name",
@@ -89,11 +91,12 @@ func SelectOption(canRemoveAGroup bool, hasCaptain bool) *selection.Selection {
 		"What would you like to do with this Company?",
 		options,
 		selector.WithPageSize(5),
+		selector.WithSelectedChoiceStyle(selector.ColorizedBasicSelectedChoiceStyle(settings.ExtraColor("highlight"))),
 	)
 }
 
-func SelectOptionModel(canRemoveAGroup bool, hasCaptain bool) *selection.Model {
-	return selection.NewModel(SelectOption(canRemoveAGroup, hasCaptain))
+func SelectOptionModel(settings *terminal.Settings, canRemoveAGroup bool, hasCaptain bool) *selection.Model {
+	return selection.NewModel(SelectOption(settings, canRemoveAGroup, hasCaptain))
 }
 
 type SelectGroupFor int
@@ -105,7 +108,7 @@ const (
 	Removing
 )
 
-func SelectGroup(action SelectGroupFor, groups []data.Group) (prompt *selection.Selection) {
+func SelectGroup(settings *terminal.Settings, action SelectGroupFor, groups []data.Group) (prompt *selection.Selection) {
 	filter := func(filter string, choice *selection.Choice) bool {
 		chosenGroup, _ := choice.Value.(data.Group)
 		regex := regexp.MustCompile(strings.ToLower(filter))
@@ -118,16 +121,16 @@ func SelectGroup(action SelectGroupFor, groups []data.Group) (prompt *selection.
 
 	headerRowFunc := func(canScrollUp bool) string {
 		copy := groups[0]
+		tableSettings, _ := settings.Copy()
+		tableSettings.SetFlagOn("for_selection")
+		tableSettings.SetFlag("can_scroll_up", pterm.FlagFromBool(canScrollUp))
 
-		return (&copy).TableHeaderTerminal(
-			pterm.WithFlagOn("for_selection"),
-			pterm.WithFlag("can_scroll_up", pterm.FlagFromBool(canScrollUp)),
-		)
+		return (&copy).TableHeaderTerminal(tableSettings)
 	}
 
-	selectedChoiceStyle := groupChoiceStyle(true, action)
+	selectedChoiceStyle := groupChoiceStyle(settings, true, action)
 
-	unselectedChoiceStyle := groupChoiceStyle(false, action)
+	unselectedChoiceStyle := groupChoiceStyle(settings, false, action)
 
 	var message strings.Builder
 	switch action {
@@ -149,39 +152,34 @@ func SelectGroup(action SelectGroupFor, groups []data.Group) (prompt *selection.
 		headerRowFunc,
 		selectedChoiceStyle,
 		unselectedChoiceStyle,
-		selector.WithPageSize(3),
+		selector.WithPageSize(6),
 	)
 }
 
-func SelectGroupModel(action SelectGroupFor, groups []data.Group) *selection.Model {
-	return selection.NewModel(SelectGroup(action, groups))
+func SelectGroupModel(settings *terminal.Settings, action SelectGroupFor, groups []data.Group) *selection.Model {
+	return selection.NewModel(SelectGroup(settings, action, groups))
 }
 
-func groupChoiceStyle(selected bool, action SelectGroupFor) selector.ChoiceStyleFunc {
+func groupChoiceStyle(settings *terminal.Settings, selected bool, action SelectGroupFor) selector.ChoiceStyleFunc {
 	return func(choice *selection.Choice) string {
 		group, _ := choice.Value.(data.Group)
-		var options []pterm.Option
+		promptSettings, _ := settings.Copy()
 
 		if selected {
-			options = append(options, pterm.WithFlagOn("selected"))
+			promptSettings.SetFlagOn("selected")
 		} else {
-			options = append(options, pterm.WithFlagOff("selected"))
+			promptSettings.SetFlagOff("selected")
 		}
 
-		var style lipgloss.Style
-		switch action {
-		case Editing:
-			style = lipgloss.NewStyle().Foreground(lipgloss.Color("32"))
-		case Removing:
-			style = lipgloss.NewStyle().Foreground(lipgloss.Color("166"))
+		if action == Removing {
+			promptSettings.SetFlagOn("removing")
 		}
-		options = append(options, pterm.WithExtraStyle("selected_lead", style))
 
-		return group.ToTerminalTableEntry(options...)
+		return group.ToTerminalTableEntry(promptSettings)
 	}
 }
 
-func SelectCaptaincyOption() *selection.Selection {
+func SelectCaptaincyOption(settings *terminal.Settings) *selection.Selection {
 	options := []string{
 		"Go back",
 		"Reroll Captain's trait",
@@ -194,11 +192,12 @@ func SelectCaptaincyOption() *selection.Selection {
 		"What do you want to do about the Captain?",
 		options,
 		selector.WithPageSize(5),
+		selector.WithSelectedChoiceStyle(selector.ColorizedBasicSelectedChoiceStyle(settings.ExtraColor("highlight"))),
 	)
 }
 
-func SelectCaptaincyOptionModel() *selection.Model {
-	return selection.NewModel(SelectCaptaincyOption())
+func SelectCaptaincyOptionModel(settings *terminal.Settings) *selection.Model {
+	return selection.NewModel(SelectCaptaincyOption(settings))
 }
 
 type CaptainRerollChoice struct {
@@ -206,7 +205,7 @@ type CaptainRerollChoice struct {
 	Trait   data.Trait
 }
 
-func SelectRerollCaptainTrait(group data.Group, availableTraits []data.Trait) *selection.Selection {
+func SelectRerollCaptainTrait(settings *terminal.Settings, group data.Group, availableTraits []data.Trait) *selection.Selection {
 	copy := group
 	copy.PromoteToCaptain(nil, availableTraits...)
 	options := []CaptainRerollChoice{
@@ -244,8 +243,8 @@ func SelectRerollCaptainTrait(group data.Group, availableTraits []data.Trait) *s
 
 	selectedChoiceStyle := func(choice *selection.Choice) string {
 		info, _ := choice.Value.(CaptainRerollChoice)
-		messageStyle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("32")).Width(maxWidth).PaddingRight(2)
-		effectStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Width(120 - maxWidth)
+		messageStyle := settings.DynamicStyle("add_selected_trait_name").Width(maxWidth).PaddingRight(2)
+		effectStyle := settings.DynamicStyle("selected_trait_effect").Width(120 - maxWidth)
 		return lipgloss.JoinHorizontal(
 			lipgloss.Left,
 			messageStyle.Render(fmt.Sprintf("» %s", info.Message)),
@@ -255,10 +254,12 @@ func SelectRerollCaptainTrait(group data.Group, availableTraits []data.Trait) *s
 
 	unselectedChoiceStyle := func(choice *selection.Choice) string {
 		info, _ := choice.Value.(CaptainRerollChoice)
+		messageStyle := settings.DynamicStyle("unselected_trait_name").Width(maxWidth).PaddingRight(2)
+		effectStyle := settings.DynamicStyle("unselected_trait_effect").Width(120 - maxWidth)
 		return lipgloss.JoinHorizontal(
 			lipgloss.Left,
-			lipgloss.NewStyle().Width(maxWidth).PaddingRight(2).Render(fmt.Sprintf("  %s", info.Message)),
-			lipgloss.NewStyle().Width(120-2-maxWidth).Faint(true).Render(info.Trait.Effect),
+			messageStyle.Render(fmt.Sprintf("  %s", info.Message)),
+			effectStyle.Render(info.Trait.Effect),
 		)
 	}
 
@@ -273,36 +274,36 @@ func SelectRerollCaptainTrait(group data.Group, availableTraits []data.Trait) *s
 	)
 }
 
-func SelectRerollCaptainTraitModel(group data.Group, availableTraits []data.Trait) *selection.Model {
-	return selection.NewModel(SelectRerollCaptainTrait(group, availableTraits))
+func SelectRerollCaptainTraitModel(settings *terminal.Settings, group data.Group, availableTraits []data.Trait) *selection.Model {
+	return selection.NewModel(SelectRerollCaptainTrait(settings, group, availableTraits))
 }
 
-func SelectCaptainTrait(availableTraits []data.Trait) *selection.Selection {
+func SelectCaptainTrait(settings *terminal.Settings, availableTraits []data.Trait) *selection.Selection {
 	return tprompts.SelectTrait(
+		settings,
 		"Which Trait do you want the Captain to have?",
 		data.FilterTraitsByType("Captain", availableTraits),
 	)
 }
 
-func SelectCaptainTraitModel(availableTraits []data.Trait) *selection.Model {
-	return selection.NewModel(SelectCaptainTrait(availableTraits))
+func SelectCaptainTraitModel(settings *terminal.Settings, availableTraits []data.Trait) *selection.Model {
+	return selection.NewModel(SelectCaptainTrait(settings, availableTraits))
 }
 
-func ConfirmDemoteCaptain(group data.Group) *confirmation.Confirmation {
-	captain := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("166")).Render(group.Name)
+func ConfirmDemoteCaptain(settings *terminal.Settings, group data.Group) *confirmation.Confirmation {
+	captain := settings.RenderWithDynamicStyle("warning_emphasis", group.Name)
 	message := fmt.Sprintf("Are you sure you want to demote %s from being captain?", captain)
 
 	return confirmer.New(message, confirmer.WithDefaultValue(confirmation.No))
 }
 
-func ConfirmDemoteCaptainModel(group data.Group) *confirmation.Model {
-	return confirmation.NewModel(ConfirmDemoteCaptain(group))
+func ConfirmDemoteCaptainModel(settings *terminal.Settings, group data.Group) *confirmation.Model {
+	return confirmation.NewModel(ConfirmDemoteCaptain(settings, group))
 }
 
-func ConfirmReplaceCaptain(current data.Group, new data.Group) *confirmation.Confirmation {
-	style := lipgloss.NewStyle().Bold(true)
-	currentCaptain := style.Copy().Foreground(lipgloss.Color("166")).Render(current.Name)
-	newCaptain := style.Copy().Foreground(lipgloss.Color("32")).Render(new.Name)
+func ConfirmReplaceCaptain(settings *terminal.Settings, current data.Group, new data.Group) *confirmation.Confirmation {
+	currentCaptain := settings.RenderWithDynamicStyle("warning_emphasis", current.Name)
+	newCaptain := settings.RenderWithDynamicStyle("confirmation_emphasis", new.Name)
 	message := fmt.Sprintf(
 		"Are you sure you want to demote %s from being captain and promote %s in their stead?",
 		currentCaptain,
@@ -311,6 +312,6 @@ func ConfirmReplaceCaptain(current data.Group, new data.Group) *confirmation.Con
 	return confirmer.New(message, confirmer.WithDefaultValue(confirmation.No))
 }
 
-func ConfirmReplaceCaptainModel(current data.Group, new data.Group) *confirmation.Model {
-	return confirmation.NewModel(ConfirmReplaceCaptain(current, new))
+func ConfirmReplaceCaptainModel(settings *terminal.Settings, current data.Group, new data.Group) *confirmation.Model {
+	return confirmation.NewModel(ConfirmReplaceCaptain(settings, current, new))
 }

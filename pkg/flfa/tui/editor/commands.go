@@ -185,3 +185,22 @@ func (model *Model) UpdateConfirmQuitWithoutSaving() (cmd tea.Cmd) {
 
 	return model.Done
 }
+
+func (model *Model) Quit() (cmd tea.Cmd) {
+	// need to make sure that the version on disk is the same as in memory;
+	// if it is, quit. if it is not, prompt to save and then quit.
+	savedPlayerPersona, err := model.Api.GetPlayer(model.Player.Name, "")
+	if err != nil {
+		model.RecordFatalError(err)
+	}
+	dataEqual := reflect.DeepEqual(savedPlayerPersona.Data, model.Player.Data)
+	settingsEqual := reflect.DeepEqual(savedPlayerPersona.Settings, model.Player.Settings)
+
+	if dataEqual && settingsEqual {
+		cmd = model.Done
+	} else {
+		cmd = model.SetAndStartSubstate(ConfirmQuitWithoutSaving)
+	}
+
+	return cmd
+}

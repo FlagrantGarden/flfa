@@ -18,6 +18,7 @@ type Model struct {
 	Player   *player.Model
 	Company  *company.Model
 	Indexes  Indexes
+	Cache    Cache
 	Substate Substate
 }
 
@@ -33,6 +34,10 @@ type Indexes struct {
 	RemovingCompany int
 }
 
+type Cache struct {
+	Player *persona.Player
+}
+
 type Substate struct {
 	Editing SubstateEditing
 	Player  SubstatePlayer
@@ -42,7 +47,7 @@ type Substate struct {
 func (model *Model) SetAndStartState(state compositor.State) (cmd tea.Cmd) {
 	switch state {
 	case StatePlayerMenu:
-		cmd = model.SetAndStartSubstate(SelectingPlayer)
+		cmd = model.SetAndStartSubstate(LoadingPlayer)
 	case StateCompanyMenu:
 		cmd = model.SetAndStartSubstate(EditingCompany)
 	case StateRosterMenu:
@@ -75,6 +80,9 @@ func NewModel(api *flfa.Api, options ...compositor.Option[*Model]) *Model {
 	model := &Model{
 		SharedModel: tui.SharedModel{
 			Api: api,
+			Compositor: compositor.Compositor{
+				TerminalSettings: tui.TerminalSettings(),
+			},
 		},
 	}
 
@@ -122,7 +130,12 @@ func (model *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return model, cmd
 		}
 	case compositor.EndMsg:
-		return model, model.UpdateOnSubmodelEnded()
+		cmd := model.UpdateOnSubmodelEnded()
+		if cmd != nil {
+			return model, cmd
+		}
+	case tea.WindowSizeMsg:
+		model.SetSize(msg.Width, msg.Height)
 	}
 
 	// Passthru to submodel
@@ -142,5 +155,5 @@ func (model *Model) View() (view string) {
 		view = model.ViewFatalError()
 	}
 
-	return view
+	return model.Display("Editor", view)
 }

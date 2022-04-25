@@ -14,7 +14,7 @@ const (
 func (state SubstateChoosing) Start(model *Model) (cmd tea.Cmd) {
 	switch model.Substate.Choosing {
 	case SelectingPersona:
-		model.Selection = prompts.ChoosePlayerModel(model.Api.Cache.Players)
+		model.Selection = prompts.ChoosePlayerModel(model.TerminalSettings, model.Api.Cache.Players)
 		cmd = model.Selection.Init()
 	}
 
@@ -31,7 +31,11 @@ func (state SubstateChoosing) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 }
 
 func (state SubstateChoosing) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
-	// TODO
+	if model.IsSubmodel {
+		cmd = model.Cancelled
+	} else {
+		cmd = tea.Quit
+	}
 	return cmd
 }
 

@@ -28,7 +28,14 @@ func (model *Model) UpdateOnKeyPress(msg tea.KeyMsg) (cmd tea.Cmd) {
 	case "ctrl+c":
 		cmd = tea.Quit
 	case "esc":
-		// TODO
+		switch model.State {
+		case StateChoosingCompany:
+			cmd = model.Substate.Choosing.UpdateOnEsc(model)
+		case StateCreatingCompany:
+			cmd = model.Substate.Creating.UpdateOnEsc(model)
+		case StateEditingCompany:
+			cmd = model.Substate.Editing.UpdateOnEsc(model)
+		}
 	case "enter":
 		switch model.State {
 		case StateChoosingCompany:

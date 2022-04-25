@@ -21,10 +21,10 @@ const (
 func (state SubstateCreating) Start(model *Model) (cmd tea.Cmd) {
 	switch state {
 	case Naming:
-		model.TextInput = prompts.GetNameModel()
+		model.TextInput = prompts.GetNameModel(model.TerminalSettings)
 		cmd = model.TextInput.Init()
 	case Describing:
-		model.TextInput = prompts.GetDescriptionModel()
+		model.TextInput = prompts.GetDescriptionModel(model.TerminalSettings)
 		cmd = model.TextInput.Init()
 	case AddingFirstGroup:
 		model.Group = group.NewModel(model.Api, group.AsSubModel())
@@ -60,10 +60,12 @@ func (state SubstateCreating) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 }
 
 func (state SubstateCreating) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
-	switch state {
-	case Naming:
-	case Describing:
-	case AddingFirstGroup:
+	if model.Company == nil {
+		cmd = model.SetAndStartSubstate(SelectingCompany)
+	} else if model.IsSubmodel {
+		cmd = model.Cancelled
+	} else {
+		cmd = tea.Quit
 	}
 
 	return cmd

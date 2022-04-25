@@ -62,6 +62,8 @@ type Compositor struct {
 	Selection *selection.Model
 	// Compositors always include a confirmation model, but it need not be used.
 	TextInput *textinput.Model
+	// Compositors always include default terminal settings; they can be extended or replaced.
+	TerminalSettings *terminal.Settings
 }
 
 // A Modeler is a bubbletea Model which follows the design pattern the Compositor supports; namely the use of state and
@@ -154,7 +156,7 @@ func (model *Compositor) Cancelled() tea.Msg {
 	if model.IsSubmodel {
 		return EndMsg{}
 	} else {
-		return tea.Quit
+		return tea.Quit()
 	}
 }
 
@@ -165,7 +167,7 @@ func (model *Compositor) Done() tea.Msg {
 	if model.IsSubmodel {
 		return EndMsg{}
 	} else {
-		return tea.Quit
+		return tea.Quit()
 	}
 }
 
@@ -177,14 +179,50 @@ func (sharedModel *Compositor) SetSize(width int, height int) {
 
 // This method returns the default view for a compositor-based model when a fatal error has been recorded.
 func (sharedModel *Compositor) ViewFatalError(options ...terminal.Option) string {
-	errColor := lipgloss.Color("166")
-	errStyle := lipgloss.NewStyle().Foreground(errColor)
 	message := lipgloss.JoinVertical(
 		lipgloss.Center,
-		errStyle.Copy().Bold(true).Margin(1).Render("Fatal Error!"),
-		errStyle.Copy().Width(80).Align(lipgloss.Left).Render(sharedModel.FatalError.Error()),
+		sharedModel.TerminalSettings.DynamicStyle("error_header").Render("Fatal Error!"),
+		sharedModel.TerminalSettings.DynamicStyle("error_message").Render(sharedModel.FatalError.Error()),
 	)
 
-	message = lipgloss.NewStyle().Border(lipgloss.DoubleBorder()).BorderForeground(errColor).Render(message)
-	return lipgloss.Place(160, 160, lipgloss.Center, lipgloss.Center, message)
+	message = sharedModel.TerminalSettings.DynamicStyle("error_box").Render(message)
+	// message = lipgloss.NewStyle().Border(lipgloss.DoubleBorder()).BorderForeground(errColor).Render(message)
+	return lipgloss.Place(120, 60, lipgloss.Center, lipgloss.Center, message)
+}
+
+// Returns the default terminal settings required for the Compositor to behave and display correctly.
+func DefaultTerminalSettings() *terminal.Settings {
+	return terminal.New(
+		terminal.WithExtraColor("error", lipgloss.Color("166")),
+		terminal.WithExtraStyle("error_header", lipgloss.NewStyle().Bold(true).Margin(1)),
+		terminal.WithExtraStyle("error_message", lipgloss.NewStyle().Align(lipgloss.Left).Width(80).Padding(0, 2, 1)),
+		terminal.WithExtraStyle("error_box", lipgloss.NewStyle().Border(lipgloss.DoubleBorder())),
+		terminal.WithDynamicStyle(
+			"error_header",
+			terminal.OverrideWithExtraStyle("error_header"),
+			terminal.ColorizeForeground("error"),
+		),
+		terminal.WithDynamicStyle(
+			"error_message",
+			terminal.OverrideWithExtraStyle("error_message"),
+			terminal.ColorizeForeground("error"),
+		),
+		terminal.WithDynamicStyle(
+			"error_box",
+			terminal.OverrideWithExtraStyle("error_box"),
+			terminal.ColorizeBorderForeground("error"),
+		),
+	)
+}
+
+// Returns a new instance of a Compositor with the terminal settings initialized. Specify one or more options to append
+// or override the existing settings, if desired.
+func New(terminalSettingsOptions ...terminal.Option) *Compositor {
+	var combinedOptions []terminal.Option
+	combinedOptions = append(combinedOptions, terminal.From(*DefaultTerminalSettings()))
+	combinedOptions = append(combinedOptions, terminalSettingsOptions...)
+
+	return &Compositor{
+		TerminalSettings: terminal.New(combinedOptions...),
+	}
 }

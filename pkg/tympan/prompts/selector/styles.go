@@ -47,6 +47,17 @@ func DefaultFinalChoiceStyle() ChoiceStyleFunc {
 	}
 }
 
+// This helper function returns a minimal final choice style for the prompt, bolding and applying the specified coloring
+// to the string representation of the final choice.
+func ColorizedBasicFinalChoiceStyle(color lipgloss.TerminalColor) ChoiceStyleFunc {
+	return func(choice *selection.Choice) string {
+		return lipgloss.NewStyle().
+			Bold(true).
+			Foreground(color).
+			Render(fmt.Sprintf("  %s", choice.String))
+	}
+}
+
 // This helper function returns a minimal default selected choice style for the prompt, bolding and coloring blue the
 // string representation of the selected choice and placing a "»" before the choice to more clearly identify that it is
 // selected beyond only using color/font weight.
@@ -55,6 +66,18 @@ func DefaultSelectedChoiceStyle() ChoiceStyleFunc {
 		return lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lipgloss.Color("32")).
+			Render(fmt.Sprintf("» %s", choice.String))
+	}
+}
+
+// This helper function returns a minimal selected choice style for the prompt, bolding and applying the specified
+// coloring to the string representation of the selected choice and placing a "»" before the choice to more clearly
+// identify that it is selected beyond only using color/font weight.
+func ColorizedBasicSelectedChoiceStyle(color lipgloss.TerminalColor) ChoiceStyleFunc {
+	return func(choice *selection.Choice) string {
+		return lipgloss.NewStyle().
+			Bold(true).
+			Foreground(color).
 			Render(fmt.Sprintf("» %s", choice.String))
 	}
 }

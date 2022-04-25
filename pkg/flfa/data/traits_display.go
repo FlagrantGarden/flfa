@@ -19,41 +19,33 @@ func (trait *Trait) MarkdownHeader() {}
 
 func TraitMarkdownTable(traits ...Trait) {}
 
-func TraitTerminalSettings(options ...terminal.Option) terminal.Settings {
-	combinedOptions := []terminal.Option{
-		terminal.WithPrimaryStyle(lipgloss.NewStyle()),
-		terminal.WithExtraStyle("lead", lipgloss.NewStyle().Bold(true)),
-		terminal.WithExtraStyle("body", lipgloss.NewStyle()),
-		terminal.WithLeadColor(lipgloss.Color("32")),
-		terminal.WithBodyColor(lipgloss.Color("11")),
-	}
-
-	combinedOptions = append(combinedOptions, options...)
-
-	return *terminal.New(combinedOptions...)
-
-}
-
-func (trait *Trait) ToTerminalChoice(selected bool, leadWidth int, options ...terminal.Option) string {
-	settings := TraitTerminalSettings(options...)
-	leadStyle := settings.AppliedExtraStyles("lead")
-	bodyStyle := settings.AppliedExtraStyles("body")
-
+func (trait *Trait) ToTerminalChoice(settings *terminal.Settings, leadWidth int) string {
 	var marking string
+	var nameStyle lipgloss.Style
+	var effectStyle lipgloss.Style
+
+	selected := settings.FlagIsOn("selected")
+	removing := settings.FlagIsOn("removing_trait")
+
 	if selected {
-		leadStyle.Foreground(settings.Colors.Lead)
-		bodyStyle.Foreground(settings.Colors.Body)
-		marking = fmt.Sprintf("  %s ", leadStyle.Render("»"))
+		effectStyle = settings.DynamicStyle("selected_trait_effect")
+		if removing {
+			nameStyle = settings.DynamicStyle("remove_selected_trait_name")
+		} else {
+			nameStyle = settings.DynamicStyle("add_selected_trait_name")
+		}
+		marking = fmt.Sprintf("  %s ", nameStyle.Render("»"))
 	} else {
-		bodyStyle.Faint(true)
+		effectStyle = settings.DynamicStyle("unselected_trait_effect")
+		nameStyle = settings.DynamicStyle("unselected_trait_name")
 		marking = "    "
 	}
 
 	return lipgloss.JoinHorizontal(
 		lipgloss.Top,
 		marking,
-		leadStyle.Align(lipgloss.Left).Width(leadWidth).Render(trait.Name),
-		trait.DisplayEffectBlock(bodyStyle, 80),
+		nameStyle.Align(lipgloss.Left).Width(leadWidth).Render(trait.Name),
+		trait.DisplayEffectBlock(effectStyle, 80),
 	)
 }
 

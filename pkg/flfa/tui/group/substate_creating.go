@@ -19,10 +19,10 @@ const (
 func (state SubstateCreating) Start(model *Model) (cmd tea.Cmd) {
 	switch state {
 	case Naming:
-		model.TextInput = prompts.GetGroupNameModel()
+		model.TextInput = prompts.GetGroupNameModel(model.TerminalSettings)
 		cmd = model.TextInput.Init()
 	case SelectingProfile:
-		model.Selection = prompts.SelectProfileModel(model.ApplicableProfiles())
+		model.Selection = prompts.SelectProfileModel(model.TerminalSettings, model.ApplicableProfiles())
 		cmd = model.Selection.Init()
 	}
 
@@ -41,8 +41,10 @@ func (state SubstateCreating) UpdateOnEnter(model *Model) (cmd tea.Cmd) {
 }
 
 func (state SubstateCreating) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
-	// TODO
-	return cmd
+	if model.IsSubmodel {
+		return model.Cancelled
+	}
+	return tea.Quit
 }
 
 func (state SubstateCreating) UpdateOnEnded(model *Model) (cmd tea.Cmd) {

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/FlagrantGarden/flfa/pkg/flfa/data"
+	"github.com/FlagrantGarden/flfa/pkg/tympan/printers/terminal"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -12,25 +13,23 @@ func (model *Model) CaptainSummary() string {
 	group := model.CaptainsGroup()
 	trait := group.Captain
 
-	companyName := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("32")).
-		Render(model.Company.Name)
+	traitName := model.TerminalSettings.Apply(
+		terminal.OverrideWithExtraStyle("strong"),
+		terminal.ColorizeForeground("highlight"),
+	).Render(trait.Name)
 
-	effect := lipgloss.NewStyle().
-		BorderLeft(true).
-		PaddingLeft(1).
-		MarginLeft(4).
-		Faint(true).
-		Foreground(lipgloss.Color("11")).
-		BorderStyle(lipgloss.NormalBorder()).
-		Width(60).
+	groupName := model.TerminalSettings.Apply(
+		terminal.OverrideWithExtraStyle("strong"),
+		terminal.ColorizeForeground("adding"),
+	).Render(group.Name)
+
+	effect := model.TerminalSettings.DynamicStyle("captain_trait_description").Width(60).
 		Render(strings.TrimSpace(trait.Effect))
 
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
-		fmt.Sprintf("The %s Captain's Group is currently '%s'.", companyName, group.Name),
-		fmt.Sprintf("They have the %s trait:", lipgloss.NewStyle().Bold(true).Render(trait.Name)),
+		fmt.Sprintf("The %s Captain's Group is currently '%s'.", model.FormattedCompanyName(), groupName),
+		fmt.Sprintf("They have the %s trait:", traitName),
 		effect,
 	)
 }
@@ -57,8 +56,10 @@ func (model *Model) ShouldDisplayCaptainSummary() bool {
 func (model *Model) CompanyOverview() string {
 	var summary strings.Builder
 
-	summary.WriteString(fmt.Sprintf("Editing the '%s' Company. Current Roster (%d points):\n\n", model.Name, model.Points()))
-	summary.WriteString(data.DisplayGroupTerminal(model.Groups))
+	summary.WriteString(fmt.Sprintf("Editing the %s Company.\n", model.FormattedCompanyName()))
+	summary.WriteString(model.FormattedCompanyDescription())
+	summary.WriteString(fmt.Sprintf("\nCurrent Roster (%d points):\n\n", model.Points()))
+	summary.WriteString(data.DisplayGroupTerminal(model.TerminalSettings, model.Groups))
 	summary.WriteString("\n\n")
 
 	return summary.String()
@@ -81,18 +82,10 @@ func (model *Model) ShouldDisplayCompanyOverview() bool {
 }
 
 func (model *Model) FormattedCompanyName() string {
-	return lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("99")).Render(model.Name)
+	return model.TerminalSettings.RenderWithDynamicStyle("company_name", model.Name)
 }
 
 func (model *Model) FormattedCompanyDescription() string {
-	return lipgloss.NewStyle().
-		BorderLeft(true).
-		MarginLeft(1).
-		PaddingLeft(3).
-		Width(80).
-		Italic(true).
-		Foreground(lipgloss.Color("212")).
-		BorderStyle(lipgloss.ThickBorder()).
-		BorderForeground(lipgloss.Color("212")).
-		Render(model.Description)
+	return model.TerminalSettings.DynamicStyle("company_description").
+		Width(80).Render(strings.TrimSpace(model.Description))
 }

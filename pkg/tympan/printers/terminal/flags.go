@@ -19,8 +19,9 @@ var (
 // A terminal settings option to add a flag by name and value to the list of flags for that setting. If the flag already
 // exists, this option will override it.
 func WithFlag(name string, setting Flag) Option {
-	return func(settings *Settings) {
+	return func(settings *Settings) *Settings {
 		settings.Flags[name] = setting
+		return settings
 	}
 }
 
@@ -81,4 +82,40 @@ func (settings *Settings) Flag(name string) Flag {
 		return setting
 	}
 	return FlagUnset
+}
+
+// Retrieve the current state of a flag by name from an instance of terminal settings.
+// Return true if the flag is On, otherwise false.
+func (settings *Settings) FlagIsOn(name string) bool {
+	flag := settings.Flag(name)
+
+	if flag == FlagOn {
+		return true
+	}
+
+	return false
+}
+
+// Retrieve the current state of a flag by name from an instance of terminal settings.
+// Return true if the flag is Off, otherwise false.
+func (settings *Settings) FlagIsOff(name string) bool {
+	flag := settings.Flag(name)
+
+	if flag == FlagOff {
+		return true
+	}
+
+	return false
+}
+
+// Retrieve the current state of a flag by name from an instance of terminal settings.
+// Return true if the flag is Unset, otherwise false.
+func (settings *Settings) FlagIsUnset(name string) bool {
+	flag := settings.Flag(name)
+
+	if flag == FlagUnset {
+		return true
+	}
+
+	return false
 }

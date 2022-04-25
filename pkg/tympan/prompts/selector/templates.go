@@ -63,7 +63,7 @@ const TemplateTable = `
 {{ end }}
 
 {{ range $i, $choice := .Choices }}
-  {{- if (eq $i 0) }}{{ HeaderRow $canScrollUp }}{{ end }}
+  {{- if (eq $i 0) }}{{ print (HeaderRow $canScrollUp) "\n" }}{{ end }}
   {{- if IsScrollDownHintPosition $i -}}
     {{- if eq $.SelectedIndex $i }}
       {{- print (Selected $choice) "\n" }}

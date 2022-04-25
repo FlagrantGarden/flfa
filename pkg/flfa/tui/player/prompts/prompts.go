@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"github.com/FlagrantGarden/flfa/pkg/flfa/state/player"
+	"github.com/FlagrantGarden/flfa/pkg/tympan/printers/terminal"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/prompts/confirmer"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/prompts/selector"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/prompts/texter"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/utils"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/erikgeiser/promptkit/confirmation"
 	"github.com/erikgeiser/promptkit/selection"
 	"github.com/erikgeiser/promptkit/textinput"
@@ -27,10 +27,10 @@ func GetNameModel() *textinput.Model {
 	return textinput.NewModel(GetName())
 }
 
-func ChoosePlayer(personas []player.Player) *selection.Selection {
+func ChoosePlayer(settings *terminal.Settings, personas []player.Player) *selection.Selection {
 	var messageBuilder strings.Builder
 	messageBuilder.WriteString("It looks like this is your first time playing ")
-	messageBuilder.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Color("5")).Bold(true).Render("Flagrant Factions"))
+	messageBuilder.WriteString(settings.RenderWithDynamicStyle("app_name", "Flagrant Factions"))
 	messageBuilder.WriteString("!\nDo you want to create a user persona now? ")
 	messageBuilder.WriteString("If not, you can just use the default one.\n")
 	message := messageBuilder.String()
@@ -48,21 +48,27 @@ func ChoosePlayer(personas []player.Player) *selection.Selection {
 		choices = append(choices, "default")
 	}
 
-	return selector.NewStringSelector(message, choices, selector.WithPageSize(5))
+	return selector.NewStringSelector(
+		message,
+		choices,
+		selector.WithPageSize(5),
+		selector.WithSelectedChoiceStyle(selector.ColorizedBasicSelectedChoiceStyle(settings.ExtraColor("highlight"))),
+	)
 }
 
-func ChoosePlayerModel(personas []player.Player) *selection.Model {
-	return selection.NewModel(ChoosePlayer(personas))
+func ChoosePlayerModel(settings *terminal.Settings, personas []player.Player) *selection.Model {
+	return selection.NewModel(ChoosePlayer(settings, personas))
 }
 
-func SetAsPreferred(name string) *confirmation.Confirmation {
+func SetAsPreferred(settings *terminal.Settings, name string) *confirmation.Confirmation {
 	var messageBuilder strings.Builder
+	name = settings.RenderWithDynamicStyle("confirmation_emphasis", name)
 	messageBuilder.WriteString(fmt.Sprintf("Do you want to set %s as your preferred persona? ", name))
 	messageBuilder.WriteString("Next time you play, this one will load automatically.")
 
 	return confirmer.New(messageBuilder.String(), confirmer.WithDefaultValue(confirmation.No))
 }
 
-func SetAsPreferredModel(name string) *confirmation.Model {
-	return confirmation.NewModel(SetAsPreferred(name))
+func SetAsPreferredModel(settings *terminal.Settings, name string) *confirmation.Model {
+	return confirmation.NewModel(SetAsPreferred(settings, name))
 }

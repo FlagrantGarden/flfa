@@ -12,24 +12,27 @@ type Styles struct {
 
 // This terminal settings option sets the primary style for a new instance of terminal settings.
 func WithPrimaryStyle(style lipgloss.Style) Option {
-	return func(settings *Settings) {
+	return func(settings *Settings) *Settings {
 		settings.Styles.Primary = style
+		return settings
 	}
 }
 
 // This terminal settings option adds an extra style to a new instance of terminal settings or updates the style if it
 // has already been added to the map. This can be used to extend/modify the list of extra styles safely in a loop.
 func WithExtraStyle(name string, style lipgloss.Style) Option {
-	return func(settings *Settings) {
+	return func(settings *Settings) *Settings {
 		settings.Styles.Extra[name] = style
+		return settings
 	}
 }
 
 // This terminal settings option sets the extra styles for a new instance of terminal settings to exactly the map that
 // you pass to it; if this option is applied after any others which modify the extra styles, it replaces all of them.
 func WithExtraStyles(extras map[string]lipgloss.Style) Option {
-	return func(settings *Settings) {
+	return func(settings *Settings) *Settings {
 		settings.Styles.Extra = extras
+		return settings
 	}
 }
 
@@ -37,13 +40,14 @@ func WithExtraStyles(extras map[string]lipgloss.Style) Option {
 // given name to a new instance of terminal settings. If the name already exists in the list of extra styles, the new
 // styles will be inherited to it, extending the style but not overwriting it.
 func WithMergedExtraStyles(name string, styles ...lipgloss.Style) Option {
-	return func(settings *Settings) {
+	return func(settings *Settings) *Settings {
 		base, ok := settings.Styles.Extra[name]
 		if ok {
 			settings.Styles.Extra[name] = MergeStyles(base, styles...)
 		} else {
 			settings.Styles.Extra[name] = CombineStyles(styles[0], styles[1:]...)
 		}
+		return settings
 	}
 }
 
