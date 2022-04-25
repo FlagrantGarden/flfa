@@ -25,7 +25,7 @@ func (state SubstateEditing) Start(model *Model) (cmd tea.Cmd) {
 			cmd = tea.Quit
 		}
 	case Renaming:
-		model.Selection = prompts.ChoosePlayerModel(model.Api.Cache.Players)
+		model.Selection = prompts.ChoosePlayerModel(model.TerminalSettings, model.Api.Cache.Players)
 		cmd = model.Selection.Init()
 	}
 

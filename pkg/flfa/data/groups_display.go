@@ -47,114 +47,78 @@ func GroupMarkdownTable(groups ...Group) string {
 	return groupOutput.String()
 }
 
-func GroupTerminalSettings(options ...pterm.Option) (settings *pterm.Settings) {
-	combinedOptions := []pterm.Option{
-		pterm.WithPrimaryStyle(lipgloss.NewStyle().Padding(0, 1)),
-		pterm.WithExtraStyle("selected_body", lipgloss.NewStyle().Foreground(lipgloss.Color("11")).Faint(true)),
-		pterm.WithExtraStyle("captain", lipgloss.NewStyle().Bold(true)),
-		pterm.WithExtraStyle("header", lipgloss.NewStyle().BorderBottom(true).BorderStyle(lipgloss.DoubleBorder())),
-		pterm.WithExtraStyle("name", lipgloss.NewStyle().Width(20).Align(lipgloss.Left)),
-		pterm.WithExtraStyle("profile_name", lipgloss.NewStyle().Width(15).Align(lipgloss.Center)),
-		pterm.WithExtraStyle("melee", lipgloss.NewStyle().Width(15).Align(lipgloss.Center)),
-		pterm.WithExtraStyle("missile", lipgloss.NewStyle().Width(15).Align(lipgloss.Center)),
-		pterm.WithExtraStyle("move", lipgloss.NewStyle().Width(10).Align(lipgloss.Center)),
-		pterm.WithExtraStyle("fighting_strength", lipgloss.NewStyle().Width(10).Align(lipgloss.Center)),
-		pterm.WithExtraStyle("resolve", lipgloss.NewStyle().Width(5).Align(lipgloss.Center)),
-		pterm.WithExtraStyle("toughness", lipgloss.NewStyle().Width(5).Align(lipgloss.Center)),
-		pterm.WithExtraStyle("traits", lipgloss.NewStyle().Width(25).Align(lipgloss.Left)),
-	}
-
-	combinedOptions = append(combinedOptions, options...)
-
-	settings = pterm.New(combinedOptions...)
-
-	row := lipgloss.NewStyle().
-		BorderBottom(true).
-		BorderStyle(lipgloss.NormalBorder())
-
-	if settings.Colors.Subtle == nil {
-		settings.Styles.Extra["row"] = row.BorderForeground(lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#767676"})
-	} else {
-		settings.Styles.Extra["row"] = row.BorderForeground(settings.Colors.Subtle)
-	}
-
-	return settings
-}
-
-func (group *Group) ToTerminalTableEntry(options ...pterm.Option) string {
-	settings := GroupTerminalSettings(options...)
+func (group *Group) ToTerminalTableEntry(settings *pterm.Settings) string {
 	name := fmt.Sprintf("%s (%d)", group.Name, group.Points)
 
 	var cells []string
-	var body_styles []string
-	var lead_styles []string
 
+	if settings.FlagIsOn("selected") {
+		cells = append(cells, settings.RenderWithDynamicStyle("selection_marking_table", "  » "))
+	} else if settings.FlagIsOff("selected") {
+		cells = append(cells, settings.RenderWithDynamicStyle("selection_marking_table", "    "))
+	}
+
+	nameStyle := settings.DynamicStyle("table_group_entry_name")
 	if group.Captain.Name != "" {
-		lead_styles = append(lead_styles, "captain")
+		nameStyle.Bold(true)
 	}
-
-	switch settings.Flag("selected") {
-	case pterm.FlagOff:
-		cells = append(cells, settings.AppliedExtraStyles().Width(4).Render("    "))
-	case pterm.FlagOn:
-		lead_styles = append(lead_styles, "selected_lead")
-		body_styles = append(body_styles, "selected_body")
-		cells = append(cells, settings.AppliedExtraStyles("selected_lead").Width(4).Render("  » "))
-	}
-
-	cells = append(cells, settings.AppliedExtraStyles(append(lead_styles, "name")...).Render(name))
-	cells = append(cells, settings.AppliedExtraStyles(append(body_styles, "profile_name")...).Render(group.ProfileName))
-	cells = append(cells, settings.AppliedExtraStyles(append(body_styles, "melee")...).Render(group.Melee.String()))
-	cells = append(cells, settings.AppliedExtraStyles(append(body_styles, "missile")...).Render(group.Missile.String()))
-	cells = append(cells, settings.AppliedExtraStyles(append(body_styles, "move")...).Render(group.Move.String()))
-	cells = append(cells, settings.AppliedExtraStyles(append(body_styles, "fighting_strength")...).Render(group.FightingStrength.String()))
-	cells = append(cells, settings.AppliedExtraStyles(append(body_styles, "resolve")...).Render(fmt.Sprintf("%d", group.Resolve)))
-	cells = append(cells, settings.AppliedExtraStyles(append(body_styles, "toughness")...).Render(fmt.Sprintf("%d", group.Toughness)))
-	cells = append(cells, settings.AppliedExtraStyles(append(body_styles, "traits")...).Render(strings.Join(group.Traits, ", ")))
+	cells = append(cells, nameStyle.Render(name))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_entry_profile_name", group.ProfileName))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_entry_melee", group.Melee.String()))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_entry_missile", group.Missile.String()))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_entry_move", group.Move.String()))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_entry_fighting_strength", group.FightingStrength.String()))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_entry_resolve", fmt.Sprintf("%d", group.Resolve)))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_entry_toughness", fmt.Sprintf("%d", group.Toughness)))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_entry_traits", strings.Join(group.Traits, ", ")))
 
 	entry := lipgloss.JoinHorizontal(lipgloss.Center, cells...)
 
 	// make sure there's always space around the group
 	height := lipgloss.Height(entry)
-	entry = lipgloss.PlaceVertical((height + 2), lipgloss.Center, entry)
+	if height%2 == 0 {
+		height++
+	}
+	entry = lipgloss.PlaceVertical((height), lipgloss.Center, entry)
 
-	return settings.Styles.Extra["row"].Render(entry)
+	return entry
+
+	// return settings.Styles.Extra["row"].Render(entry)
 }
 
-func (group *Group) TableHeaderTerminal(options ...pterm.Option) string {
-	settings := GroupTerminalSettings(options...)
-
+func (group *Group) TableHeaderTerminal(settings *pterm.Settings) string {
 	var cells []string
 
 	if settings.Flag("for_selection") == pterm.FlagOn {
+		scrollerStyle := lipgloss.NewStyle().Width(4).BorderBottom(true).BorderStyle(lipgloss.HiddenBorder())
 		if settings.Flag("can_scroll_up") == pterm.FlagOn {
-			cells = append(cells, settings.AppliedExtraStyles("header").Width(4).Render(" ⇡  "))
+			cells = append(cells, scrollerStyle.Render("⇡   "))
 		} else {
-			cells = append(cells, settings.AppliedExtraStyles("header").Width(4).Render("    "))
+			cells = append(cells, scrollerStyle.Render("    "))
 		}
 	}
 
-	cells = append(cells, settings.AppliedExtraStyles("header", "name").Render("Name (P)"))
-	cells = append(cells, settings.AppliedExtraStyles("header", "profile_name").Render("Profile"))
-	cells = append(cells, settings.AppliedExtraStyles("header", "melee").Render("Melee"))
-	cells = append(cells, settings.AppliedExtraStyles("header", "missile").Render("Missile"))
-	cells = append(cells, settings.AppliedExtraStyles("header", "move").Render("Move"))
-	cells = append(cells, settings.AppliedExtraStyles("header", "fighting_strength").Render("FS"))
-	cells = append(cells, settings.AppliedExtraStyles("header", "resolve").Render("R"))
-	cells = append(cells, settings.AppliedExtraStyles("header", "toughness").Render("T"))
-	cells = append(cells, settings.AppliedExtraStyles("header", "traits").Render("Traits"))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_header_name", "Name (P)"))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_header_profile_name", "Profile"))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_header_melee", "Melee"))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_header_missile", "Missile"))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_header_move", "Move"))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_header_fighting_strength", "FS"))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_header_resolve", "R"))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_header_toughness", "T"))
+	cells = append(cells, settings.RenderWithDynamicStyle("table_group_header_traits", "Traits"))
 
 	return lipgloss.JoinHorizontal(lipgloss.Top, cells...)
 }
 
-func DisplayGroupTerminal(groups []Group) string {
+func DisplayGroupTerminal(settings *pterm.Settings, groups []Group) string {
 	var rows []string
 
-	header := groups[0].TableHeaderTerminal()
+	header := groups[0].TableHeaderTerminal(settings)
 	rows = append(rows, header)
 
 	for _, group := range groups {
-		rows = append(rows, group.ToTerminalTableEntry())
+		rows = append(rows, group.ToTerminalTableEntry(settings))
 	}
 
 	return lipgloss.JoinVertical(

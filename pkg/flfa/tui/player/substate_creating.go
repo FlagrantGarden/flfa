@@ -18,7 +18,7 @@ func (state SubstateCreating) Start(model *Model) (cmd tea.Cmd) {
 		model.TextInput = prompts.GetNameModel()
 		cmd = model.TextInput.Init()
 	case DecidingIfPreferred:
-		model.Confirmation = prompts.SetAsPreferredModel(model.Name)
+		model.Confirmation = prompts.SetAsPreferredModel(model.TerminalSettings, model.Name)
 		cmd = model.Confirmation.Init()
 	}
 

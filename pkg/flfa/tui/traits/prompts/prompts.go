@@ -5,12 +5,13 @@ import (
 	"strings"
 
 	"github.com/FlagrantGarden/flfa/pkg/flfa/data"
+	"github.com/FlagrantGarden/flfa/pkg/tympan/printers/terminal"
 	pterm "github.com/FlagrantGarden/flfa/pkg/tympan/printers/terminal"
 	"github.com/FlagrantGarden/flfa/pkg/tympan/prompts/selector"
 	"github.com/erikgeiser/promptkit/selection"
 )
 
-func SelectTrait(message string, applicableTraits []data.Trait) *selection.Selection {
+func SelectTrait(settings *terminal.Settings, message string, applicableTraits []data.Trait) *selection.Selection {
 	filter := func(filter string, choice *selection.Choice) bool {
 		chosenTrait, _ := choice.Value.(data.Trait)
 		regex := regexp.MustCompile(strings.ToLower(filter))
@@ -30,9 +31,9 @@ func SelectTrait(message string, applicableTraits []data.Trait) *selection.Selec
 	}
 	longestTraitWidth += 1
 
-	selectedChoiceStyle := TraitChoiceStyle(true, longestTraitWidth)
+	selectedChoiceStyle := TraitChoiceStyle(settings, true, longestTraitWidth)
 
-	unselectedChoiceStyle := TraitChoiceStyle(false, longestTraitWidth)
+	unselectedChoiceStyle := TraitChoiceStyle(settings, false, longestTraitWidth)
 
 	return selector.NewStructSelector(
 		message,
@@ -45,13 +46,15 @@ func SelectTrait(message string, applicableTraits []data.Trait) *selection.Selec
 	)
 }
 
-func SelectTraitModel(message string, applicableTraits []data.Trait) *selection.Model {
-	return selection.NewModel(SelectTrait(message, applicableTraits))
+func SelectTraitModel(settings *terminal.Settings, message string, applicableTraits []data.Trait) *selection.Model {
+	return selection.NewModel(SelectTrait(settings, message, applicableTraits))
 }
 
-func TraitChoiceStyle(selected bool, leadWidth int, options ...pterm.Option) func(choice *selection.Choice) string {
+func TraitChoiceStyle(settings *terminal.Settings, selected bool, leadWidth int, options ...pterm.Option) func(choice *selection.Choice) string {
 	return func(choice *selection.Choice) string {
 		trait, _ := choice.Value.(data.Trait)
-		return trait.ToTerminalChoice(selected, leadWidth, options...)
+		choiceSettings, _ := settings.Copy()
+		choiceSettings.SetFlag("selected", pterm.FlagFromBool(selected))
+		return trait.ToTerminalChoice(choiceSettings, leadWidth)
 	}
 }

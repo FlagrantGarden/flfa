@@ -21,23 +21,23 @@ func (state SubstateEditing) Start(model *Model) (cmd tea.Cmd) {
 	switch state {
 	case SelectingOption:
 		hasCompanies := len(model.Player.Data.Companies) > 0
-		model.Selection = prompts.SelectMenuOptionModel(hasCompanies)
+		model.Selection = prompts.SelectMenuOptionModel(model.TerminalSettings, hasCompanies)
 		cmd = model.Selection.Init()
 	case SelectingCompanyToEdit:
-		model.Selection = company_prompts.ChooseCompanyModel(false, model.Player.Data.Companies)
+		model.Selection = company_prompts.ChooseCompanyModel(model.TerminalSettings, false, model.Player.Data.Companies)
 		cmd = model.Selection.Init()
 	case SelectingCompanyToRemove:
-		model.Selection = company_prompts.ChooseCompanyModel(false, model.Player.Data.Companies)
+		model.Selection = company_prompts.ChooseCompanyModel(model.TerminalSettings, false, model.Player.Data.Companies)
 		cmd = model.Selection.Init()
 	case ConfirmRemoval:
 		companyToRemove := model.Player.Data.Companies[model.Indexes.RemovingCompany].Name
-		model.Confirmation = prompts.ConfirmRemoveCompanyModel(companyToRemove)
+		model.Confirmation = prompts.ConfirmRemoveCompanyModel(model.TerminalSettings, companyToRemove)
 		cmd = model.Confirmation.Init()
 	case ConfirmQuitWithoutSaving:
-		model.Confirmation = prompts.ConfirmQuitWithoutSavingModel()
+		model.Confirmation = prompts.ConfirmQuitWithoutSavingModel(model.TerminalSettings)
 		cmd = model.Confirmation.Init()
 	case ConfirmSave:
-		model.Confirmation = prompts.ConfirmSavePlayerModel()
+		model.Confirmation = prompts.ConfirmSavePlayerModel(model.TerminalSettings)
 		cmd = model.Confirmation.Init()
 	}
 

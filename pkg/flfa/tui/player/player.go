@@ -85,6 +85,9 @@ func NewModel(api *flfa.Api, options ...compositor.Option[*Model]) *Model {
 	model := &Model{
 		SharedModel: tui.SharedModel{
 			Api: api,
+			Compositor: compositor.Compositor{
+				TerminalSettings: tui.TerminalSettings(),
+			},
 		},
 	}
 

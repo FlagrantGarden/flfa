@@ -34,55 +34,57 @@ func (state SubstateEditing) Start(model *Model) (cmd tea.Cmd) {
 	case SelectingOption:
 		canRemoveAGroup := len(model.Groups) > 1
 		hasCaptain := model.HasCaptain()
-		model.Selection = prompts.SelectOptionModel(canRemoveAGroup, hasCaptain)
+		model.Selection = prompts.SelectOptionModel(model.TerminalSettings, canRemoveAGroup, hasCaptain)
 		cmd = model.Selection.Init()
 	case Renaming:
-		model.TextInput = prompts.GetNameModel()
+		model.TextInput = prompts.GetNameModel(model.TerminalSettings)
 		cmd = model.TextInput.Init()
 	case Redescribing:
-		model.TextInput = prompts.GetDescriptionModel()
+		model.TextInput = prompts.GetDescriptionModel(model.TerminalSettings)
 		cmd = model.TextInput.Init()
 	case AddingGroup:
 		model.Group = group.NewModel(model.Api, group.AsSubModel(), group.WithCompany(model.Company))
 		cmd = model.Group.Init()
 	case SelectingGroupToEdit:
-		model.Selection = prompts.SelectGroupModel(prompts.Editing, model.Groups)
+		model.Selection = prompts.SelectGroupModel(model.TerminalSettings, prompts.Editing, model.Groups)
 		cmd = model.Selection.Init()
 	case SelectingGroupToPromote:
-		model.Selection = prompts.SelectGroupModel(prompts.Promoting, model.Groups)
+		model.Selection = prompts.SelectGroupModel(model.TerminalSettings, prompts.Promoting, model.Groups)
 		cmd = model.Selection.Init()
 	case EditingGroup:
 		// ??
 	case CopyingGroup:
-		model.Selection = prompts.SelectGroupModel(prompts.Copying, model.Groups)
+		model.Selection = prompts.SelectGroupModel(model.TerminalSettings, prompts.Copying, model.Groups)
 		cmd = model.Selection.Init()
 	case RemovingGroup:
-		model.Selection = prompts.SelectGroupModel(prompts.Removing, model.Groups)
+		model.Selection = prompts.SelectGroupModel(model.TerminalSettings, prompts.Removing, model.Groups)
 		cmd = model.Selection.Init()
 	case SelectingCaptainOption:
-		model.Selection = prompts.SelectCaptaincyOptionModel()
+		model.Selection = prompts.SelectCaptaincyOptionModel(model.TerminalSettings)
 		cmd = model.Selection.Init()
 	case RerollingCaptainTrait:
 		model.Selection = prompts.SelectRerollCaptainTraitModel(
+			model.TerminalSettings,
 			model.CaptainsGroup(),
 			data.FilterTraitsBySource("core", model.Api.Cache.Traits),
 		)
 		cmd = model.Selection.Init()
 	case SelectingCaptainTrait:
-		model.Selection = prompts.SelectCaptainTraitModel(data.FilterTraitsBySource("core", model.Api.Cache.Traits))
+		model.Selection = prompts.SelectCaptainTraitModel(model.TerminalSettings, data.FilterTraitsBySource("core", model.Api.Cache.Traits))
 		cmd = model.Selection.Init()
 	case SelectingCaptainReplacement:
 		// promotableGroups := utils.RemoveIndex(model.Groups, model.CurrentCaptainIndex)
-		model.Selection = prompts.SelectGroupModel(prompts.Promoting, model.Groups)
+		model.Selection = prompts.SelectGroupModel(model.TerminalSettings, prompts.Promoting, model.Groups)
 		cmd = model.Selection.Init()
 	case ConfirmingCaptainReplacement:
 		model.Confirmation = prompts.ConfirmReplaceCaptainModel(
+			model.TerminalSettings,
 			model.CaptainsGroup(),
 			model.Groups[model.Indexes.ReplacementCaptain],
 		)
 		cmd = model.Confirmation.Init()
 	case ConfirmingCaptainDemotion:
-		model.Confirmation = prompts.ConfirmDemoteCaptainModel(model.CaptainsGroup())
+		model.Confirmation = prompts.ConfirmDemoteCaptainModel(model.TerminalSettings, model.CaptainsGroup())
 		cmd = model.Confirmation.Init()
 	}
 
@@ -143,7 +145,7 @@ func (state SubstateEditing) UpdateOnEsc(model *Model) (cmd tea.Cmd) {
 		} else {
 			cmd = tea.Quit
 		}
-	case Renaming, Redescribing, SelectingGroupToEdit, SelectingGroupToPromote, CopyingGroup, SelectingCaptainOption:
+	case Renaming, Redescribing, RemovingGroup, SelectingGroupToEdit, SelectingGroupToPromote, CopyingGroup, SelectingCaptainOption:
 		cmd = model.SetAndStartSubstate(SelectingOption)
 	case RerollingCaptainTrait, SelectingCaptainTrait, SelectingCaptainReplacement, ConfirmingCaptainDemotion:
 		cmd = model.SetAndStartSubstate(SelectingCaptainOption)
